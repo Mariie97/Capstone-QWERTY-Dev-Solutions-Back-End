@@ -1,4 +1,6 @@
 from flask import jsonify
+from psycopg2 import IntegrityError
+from psycopg2.errors import UniqueViolation
 
 from models.users_dao import UserDao
 
@@ -16,6 +18,10 @@ class UserController:
 
     def create_user(self, user_info):
         dao = UserDao()
-        user = dao.create_user(user_info)
-        return jsonify(self.build_attr_dict(user)), 201
+        try:
+            user = dao.create_user(user_info)
+            return jsonify(self.build_attr_dict(user)), 201
+        except IntegrityError as e:
+            return jsonify(e.pgerror), 400
+
 
