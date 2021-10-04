@@ -1,4 +1,4 @@
-from models.MainDAO import MainDao
+from models.main_dao import MainDao
 from flask import jsonify
 import json
 
