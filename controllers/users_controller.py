@@ -2,6 +2,7 @@ from flask import jsonify
 from psycopg2 import IntegrityError
 
 from models.users_dao import UserDao
+from utilities import STATUS_CODE
 
 
 class UserController:
@@ -21,9 +22,9 @@ class UserController:
     def create_user(self, user_info):
         try:
             user = self.dao.create_user(user_info)
-            return jsonify(self.build_attr_dict(user)), 201
+            return jsonify(self.build_attr_dict(user)), STATUS_CODE['created']
         except IntegrityError as e:
-            return jsonify(e.pgerror), 400
+            return jsonify(e.pgerror), STATUS_CODE['bad_request']
 
     def login_user(self, credentials):
         user = self.dao.login_user(credentials)
@@ -32,8 +33,8 @@ class UserController:
                 'user_id': user[0],
                 'type': user[1],
             }
-            return jsonify(dict), 200
+            return jsonify(dict), STATUS_CODE['ok']
         else:
-            return jsonify("Invalid credentials"), 401
+            return jsonify("Invalid credentials"), STATUS_CODE['unauthorized']
 
 
