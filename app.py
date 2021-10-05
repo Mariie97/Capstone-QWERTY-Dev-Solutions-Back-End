@@ -26,8 +26,11 @@ def user_register():
 
 @app.route('/api/edit', methods=['POST'])
 def user_edit():
-    data = request.json
-    return UserController().edit_user(data)
+    if request.method == 'POST':
+        data = request.json
+        return UserController().edit_user(data)
+    else:
+        return jsonify('ok')
 
 
 @app.route('/index')
