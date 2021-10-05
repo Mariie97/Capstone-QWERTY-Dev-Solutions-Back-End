@@ -24,6 +24,12 @@ def user_register():
         return jsonify('Ok')
 
 
+@app.route('/api/edit', methods=['POST'])
+def user_edit():
+    data = request.json
+    return UserController().edit_user(data)
+
+
 @app.route('/index')
 def index():
     return Controller().get_message()
