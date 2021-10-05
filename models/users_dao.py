@@ -18,17 +18,19 @@ class UserDao(MainDao):
 
         return user_info
 
-    def edituser(self, userid, data):
+    def edit_user(self, userid, data):
         cursor = self.conn.cursor()
-        query = 'update users set first_name = %s, last_name = %s, image = %s, about = %s where user_id = %s ' \
-                'returning user_id, first_name, last_name, image, about, address_id;'
+        query = 'update users set first_name = %s, last_name = %s, image = %s, about = %s, ' \
+                'password = crypt(%s, gen_salt(\'bf\')) where user_id = %s returning user_id, first_name, last_name, ' \
+                ' image, about, email, address_id;'
         cursor.execute(query, (data['first_name'].capitalize(), data['last_name'].capitalize(), data['image'],
-                               data['about'], userid))
+                               data['about'], data['email'], userid))
         user_info = cursor.fetchone()
         self.conn.commit()
 
         query = 'update address set street = %s, city = %s, zipcode = %s where address_id = %s ' \
                 'returning address_id, street, city, zipcode;'
-        cursor.execute(query, (data['street'], data['city'], data['zipcode'], user_info[5]))
+        cursor.execute(query, (data['street'], data['city'], data['zipcode'], user_info[6]))
+        self.conn.commit()
 
         return user_info
