@@ -24,9 +24,9 @@ def user_register():
         return jsonify('Ok')
 
 
-@app.route('/api/edit', methods=['POST'])
+@app.route('/api/edit', methods=['PUT'])
 def user_edit():
-    if request.method == 'POST':
+    if request.method == 'PUT':
         data = request.json
         return UserController().edit_user(data)
     else:
