@@ -20,7 +20,8 @@ class UserDao(MainDao):
 
     def get_user_info(self, user):
         cursor = self.conn.cursor()
-        query = 'select user_id, first_name, last_name, email, type from users where user_id = %s;'
+        query = 'select user_id, first_name, last_name, email, type from users where user_id = %s' \
+                'returning user_id, first_name, last_name, email, type;'
         cursor.execute(query, user['user_id'])
         user_info = cursor.fetchone()
         self.conn.commit()
