@@ -1,6 +1,6 @@
 from flask import jsonify
 from psycopg2 import IntegrityError
-from psycopg2.errors import UniqueViolation
+#from psycopg2.errors import UniqueViolation
 
 from models.users_dao import UserDao
 
