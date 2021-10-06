@@ -28,6 +28,10 @@ def user_register():
 def index():
     return Controller().get_message()
 
+@app.route('/api/user_info', methods=['GET'])
+def user_info():
+    data = request.json
+    return UserController().get_user_info(data)
 
 if __name__=='__main__':
     app.run(debug=True)

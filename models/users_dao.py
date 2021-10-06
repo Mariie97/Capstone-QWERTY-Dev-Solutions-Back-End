@@ -17,3 +17,12 @@ class UserDao(MainDao):
         self.conn.commit()
 
         return user_info
+
+    def get_user_info(self, user):
+        cursor = self.conn.cursor()
+        query = 'select * from users natural inner join address where user_id = %s;'
+        cursor.execute(query, user)
+        user_info = cursor.fetchone()
+        self.conn.commit()
+
+        return user_info
