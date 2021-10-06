@@ -37,6 +37,7 @@ class UserDao(MainDao):
 
             query2 = 'update users set address_id = %s where user_id = %s;'
             cursor.execute(query2, (address_info[0], data['user_id']))
+            user_info[6] = address_info[0]
 
         else:
             query = 'update address set street = %s, city = %s, zipcode = %s where address_id = %s;'
