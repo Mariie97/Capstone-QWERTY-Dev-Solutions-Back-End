@@ -52,9 +52,8 @@ class UserController:
         }
 
     def get_user_info(self, userid):
-        dao = UserDao()
         try:
-            user = dao.get_user_info(userid)
-            return jsonify(self.get_user_info_dict(user)), 201
+            user = self.dao.get_user_info(userid)
+            return jsonify(self.get_user_info_dict(user)), STATUS_CODE['ok']
         except IntegrityError as e:
-            return jsonify(e.pgerror), 400
+            return jsonify(e.pgerror), STATUS_CODE['bad_request']
