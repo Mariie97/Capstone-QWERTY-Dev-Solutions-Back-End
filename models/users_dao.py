@@ -26,3 +26,14 @@ class UserDao(MainDao):
         cursor.execute(query, (credentials['email'], credentials['password']))
         result = cursor.fetchone()
         return result
+
+    def get_all_users(self, data):
+        cursor = self.conn.cursor()
+        query = 'select first_name, last_name, email ' \
+                'from users ' \
+                'where type=%s;'
+        cursor.execute(query, (data['type'], ))
+        results = []
+        for row in cursor:
+            results.append(row)
+        return results
