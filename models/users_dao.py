@@ -18,6 +18,15 @@ class UserDao(MainDao):
 
         return user_info
 
+    def login_user(self, credentials):
+        cursor = self.conn.cursor()
+        query = 'select user_id, type ' \
+                'from users ' \
+                'where email=%s and password=crypt(%s, password);'
+        cursor.execute(query, (credentials['email'], credentials['password']))
+        result = cursor.fetchone()
+        return result
+
     def edit_user(self, data):
         cursor = self.conn.cursor()
         query = 'update users set first_name = %s, last_name = %s, image = %s, about = %s, ' \
