@@ -51,3 +51,10 @@ class UserController:
             return jsonify(self.security_questions_dict(user)), STATUS_CODE['ok']
         except IntegrityError as e:
             return jsonify(e.pgerror), STATUS_CODE['bad_request']
+
+    def change_password(self, user_email):
+        try:
+            user = self.dao.change_password(user_email)
+            return jsonify({'email': user[0], 'password': user[1]}), STATUS_CODE['ok']
+        except IntegrityError as e:
+            return jsonify(e.pgerror), STATUS_CODE['bad_request']

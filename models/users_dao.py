@@ -43,3 +43,12 @@ class UserDao(MainDao):
         security = [question1, question2, answer1, answer2]
 
         return security
+
+    def change_password(self, user_email):
+        cursor = self.conn.cursor()
+        query = 'update users set password = crypt(%s, gen_salt(\'bf\')) where email = %s returning email, password;'
+        cursor.execute(query, (user_email['password'], user_email['email']))
+        info = cursor.fetchone()
+        self.conn.commit()
+
+        return info

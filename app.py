@@ -79,6 +79,13 @@ def change_password():
             return UserController().retrieve_questions(data)
         else:
             return jsonify(error_msg), STATUS_CODE['not_found']
+    else:
+        data = request.json
+        error_msg = validate_email(data['email'])
+        if error_msg is not None:
+            return UserController().change_password(data)
+        else:
+            return jsonify(error_msg), STATUS_CODE['not_found']
 
 
 @app.route('/index')
