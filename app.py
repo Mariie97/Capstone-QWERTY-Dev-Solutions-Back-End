@@ -7,7 +7,7 @@ from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_requir
     unset_jwt_cookies, get_jwt
 
 from controllers.users_controller import UserController
-from utilities import validate_user_info, validate_login_data, STATUS_CODE
+from utilities import validate_user_info, validate_login_data, STATUS_CODE, validate_email
 
 app = Flask(__name__)
 
@@ -68,6 +68,17 @@ def user_register():
     else:
         #Todo: Return a list with all users
         return jsonify('Ok')
+
+
+@app.route('/api/change_password', methods=['GET', 'PUT'])
+def change_password():
+    if request.method == 'GET':
+        data = request.json
+        error_msg = validate_email(data['email'])
+        if error_msg is not None:
+            return UserController().retrieve_questions(data)
+        else:
+            return jsonify(error_msg), STATUS_CODE['not_found']
 
 
 @app.route('/index')

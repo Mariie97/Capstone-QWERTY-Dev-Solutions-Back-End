@@ -26,3 +26,20 @@ class UserDao(MainDao):
         cursor.execute(query, (credentials['email'], credentials['password']))
         result = cursor.fetchone()
         return result
+
+    def retrieve_questions(self, user_email):
+        cursor = self.conn.cursor()
+        query = 'select user_id from users where email = %s;'
+        cursor.execute(query, (user_email['email'],))
+        result = cursor.fetchone()
+        self.conn.commit()
+
+        query2 = 'select type, answer from questions where user_id = %s;'
+        cursor.execute(query2, (result[0],))
+        questions = cursor.fetchall()
+        self.conn.commit()
+        question1, answer1 = questions[0]
+        question2, answer2 = questions[1]
+        security = [question1, question2, answer1, answer2]
+
+        return security

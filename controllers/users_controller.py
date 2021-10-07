@@ -19,6 +19,14 @@ class UserController:
             'type': data[4],
         }
 
+    def security_questions_dict(self, data):
+        return {
+            'question_1': data[0],
+            'question_2': data[1],
+            'answer_1': data[2],
+            'answer_2': data[3]
+        }
+
     def create_user(self, user_info):
         try:
             user = self.dao.create_user(user_info)
@@ -37,4 +45,9 @@ class UserController:
         else:
             return jsonify("Invalid credentials"), STATUS_CODE['unauthorized']
 
-
+    def retrieve_questions(self, user_email):
+        try:
+            user = self.dao.retrieve_questions(user_email)
+            return jsonify(self.security_questions_dict(user)), STATUS_CODE['ok']
+        except IntegrityError as e:
+            return jsonify(e.pgerror), STATUS_CODE['bad_request']
