@@ -42,6 +42,6 @@ class UserController:
         dao = UserDao()
         try:
             user = dao.get_user_info(userid)
-            return jsonify(self.build_attr_dict(user)), 201
+            return jsonify(self.get_user_info_dict(user)), 201
         except IntegrityError as e:
             return jsonify(e.pgerror), 400
