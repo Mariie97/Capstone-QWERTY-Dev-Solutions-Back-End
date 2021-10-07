@@ -18,6 +18,15 @@ class UserDao(MainDao):
 
         return user_info
 
+    def login_user(self, credentials):
+        cursor = self.conn.cursor()
+        query = 'select user_id, type ' \
+                'from users ' \
+                'where email=%s and password=crypt(%s, password);'
+        cursor.execute(query, (credentials['email'], credentials['password']))
+        result = cursor.fetchone()
+        return result
+
     def get_user_info(self, user):
         cursor = self.conn.cursor()
         query = 'select * from users where user_id = %s;'
