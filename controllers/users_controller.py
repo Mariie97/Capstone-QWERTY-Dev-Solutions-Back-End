@@ -39,16 +39,19 @@ class UserController:
 
     def get_user_info_dict(self, data):
         return {
-            'user_id': data[0],
-            'first_name': data[1],
-            'last_name': data[2],
-            'password': data[3],
-            'email': data[4],
-            'image': data[5],
-            'type': data[6],
-            'about': data[7],
-            'cancellations': data[8],
-            'address_id': data[9],
+            'address_id': data[0],
+            'user_id': data[1],
+            'first_name': data[2],
+            'last_name': data[3],
+            'password': data[4],
+            'email': data[5],
+            'image': data[6],
+            'type': data[7],
+            'about': data[8],
+            'cancellations': data[9],
+            'street': data[10],
+            'city': data[11],
+            'zipcode': data[12]
         }
 
     def get_user_info(self, userid):

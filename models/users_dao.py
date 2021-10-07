@@ -29,11 +29,24 @@ class UserDao(MainDao):
 
     def get_user_info(self, user):
         cursor = self.conn.cursor()
-        query = 'select * from users where user_id = %s;'
+        query = 'select address_id from users where user_id = %s;'
         cursor.execute(query, (user['user_id'],))
-        user_info = cursor.fetchone()
+        address_info = cursor.fetchone()
         self.conn.commit()
 
+        if address_info[0] is None:
+            query1 = 'select * from users where user_id = %s;'
+            cursor.execute(query1, (user['user_id'],))
+            address_user = cursor.fetchone()
+            self.conn.commit()
+            user_info = [None, address_user[0], address_user[1], address_user[2], address_user[3],
+                         address_user[4], address_user[5], address_user[6], address_user[7], address_user[8],
+                         None, None, None]
 
+        else:
+            query1 = 'select * from users natural inner join address where user_id = %s;'
+            cursor.execute(query1, (user['user_id'],))
+            user_info = cursor.fetchone()
+            self.conn.commit()
 
         return user_info
