@@ -21,7 +21,7 @@ class UserDao(MainDao):
     def get_user_info(self, user):
         cursor = self.conn.cursor()
         query = 'select * from users where user_id = %s;'
-        cursor.execute(query, [user['user_id']])
+        cursor.execute(query, (user['user_id'],))
         user_info = cursor.fetchone()
         self.conn.commit()
 
