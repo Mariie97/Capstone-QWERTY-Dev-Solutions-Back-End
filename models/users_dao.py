@@ -17,3 +17,12 @@ class UserDao(MainDao):
         self.conn.commit()
 
         return user_info
+
+    def login_user(self, credentials):
+        cursor = self.conn.cursor()
+        query = 'select user_id, type ' \
+                'from users ' \
+                'where email=%s and password=crypt(%s, password);'
+        cursor.execute(query, (credentials['email'], credentials['password']))
+        result = cursor.fetchone()
+        return result
