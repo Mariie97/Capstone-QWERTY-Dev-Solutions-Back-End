@@ -37,19 +37,24 @@ class UserDao(MainDao):
         user_info = cursor.fetchone()
         self.conn.commit()
 
-        if user_info[6] is None:
-            query1 = 'insert into address (street, city, zipcode) values (%s, %s, %s) returning address_id;'
-            cursor.execute(query1, (data['street'], data['city'], data['zipcode']))
+        if data['street'] is not None and data['city'] is not None and data['zipcode'] is not None:
 
-            address_info = cursor.fetchone()
-            self.conn.commit()
+            if user_info[6] is None:
+                query1 = 'insert into address (street, city, zipcode) values (%s, %s, %s) returning address_id;'
+                cursor.execute(query1, (data['street'], data['city'], data['zipcode']))
 
-            query2 = 'update users set address_id = %s where user_id = %s;'
-            cursor.execute(query2, (address_info[0], data['user_id']))
+                address_info = cursor.fetchone()
+                self.conn.commit()
+
+                query2 = 'update users set address_id = %s where user_id = %s;'
+                cursor.execute(query2, (address_info[0], data['user_id']))
+
+            if user_info[6] is not None:
+                query = 'update address set street = %s, city = %s, zipcode = %s where address_id = %s;'
+                cursor.execute(query, (data['street'], data['city'], data['zipcode'], user_info[6]))
 
         else:
-            query = 'update address set street = %s, city = %s, zipcode = %s where address_id = %s;'
-            cursor.execute(query, (data['street'], data['city'], data['zipcode'], user_info[6]))
+            return user_info
 
         self.conn.commit()
         return user_info
