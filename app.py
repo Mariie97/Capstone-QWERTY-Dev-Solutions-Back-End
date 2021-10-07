@@ -6,18 +6,21 @@ from flask_cors import CORS
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, set_access_cookies, \
     unset_jwt_cookies, get_jwt
 
+from config.config import JWT_SECRET_KEY, JWT_TOKEN_LOCATION, JWT_ACCESS_TOKEN_EXPIRES_DAYS, AWS_BUCKET_NAME, \
+    AWS_UPLOAD_FOLDER, SECRET_KEY
 from controllers.users_controller import UserController
 from utilities import validate_user_info, validate_login_data, STATUS_CODE
 
 app = Flask(__name__)
 
 CORS(app)
-app.config['SECRET_KEY'] = '4451ae0bc6ad1a0004f0d48f3ed7f36f41c1a438c1289715'
+app.config['SECRET_KEY'] = SECRET_KEY
+app.config['UPLOAD_FOLDER'] = AWS_UPLOAD_FOLDER
 
 jwt = JWTManager(app)
-app.config["JWT_SECRET_KEY"] = '8c01266947a861311f965636744d880bd588a2edd30aa3e7'
-app.config['JWT_TOKEN_LOCATION'] = ['cookies']
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=1)
+app.config["JWT_SECRET_KEY"] = JWT_SECRET_KEY
+app.config['JWT_TOKEN_LOCATION'] = JWT_TOKEN_LOCATION
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = JWT_ACCESS_TOKEN_EXPIRES_DAYS
 
 
 @app.after_request

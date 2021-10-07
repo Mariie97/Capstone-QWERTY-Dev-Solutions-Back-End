@@ -1,5 +1,5 @@
 import psycopg2
-from config.db_config import db_credentials
+from config.config import db_credentials
 
 
 class MainDao:
