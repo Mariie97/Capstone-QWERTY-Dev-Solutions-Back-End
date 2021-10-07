@@ -20,15 +20,25 @@ class UserDao(MainDao):
 
     def edit_user(self, data):
         cursor = self.conn.cursor()
-        query = 'update users set first_name = %s, last_name = %s, image = %s, about = %s, ' \
-                'password = crypt(%s, gen_salt(\'bf\')) where user_id = %s returning user_id, first_name, last_name, ' \
-                ' image, about, password, address_id;'
-        cursor.execute(query, (data['first_name'].capitalize(), data['last_name'].capitalize(), data['image'],
-                               data['about'], data['password'], data['user_id']))
+        if data['image_key'] is not None:
+            query = 'update users set first_name = %s, last_name = %s, image = %s, about = %s, password = ' \
+                    'crypt(%s, gen_salt(\'bf\')) where user_id = %s returning user_id, first_name, last_name, ' \
+                    'about, password, address_id;'
+
+            cursor.execute(query, (data['first_name'].capitalize(), data['last_name'].capitalize(), data['image_key'],
+                                   data['about'], data['password'], data['user_id']))
+        else:
+            query = 'update users set first_name = %s, last_name = %s, about = %s, password = ' \
+                    'crypt(%s, gen_salt(\'bf\')) where user_id = %s returning user_id, first_name, last_name, about, ' \
+                    'password, address_id;'
+
+            cursor.execute(query, (data['first_name'].capitalize(), data['last_name'].capitalize(),
+                                   data['about'], data['password'], data['user_id']))
+
         user_info = cursor.fetchone()
         self.conn.commit()
 
-        if user_info[6] is None:
+        if user_info[-1] is None:
             query1 = 'insert into address (street, city, zipcode) values (%s, %s, %s) returning address_id;'
             cursor.execute(query1, (data['street'], data['city'], data['zipcode']))
 
@@ -40,7 +50,7 @@ class UserDao(MainDao):
 
         else:
             query = 'update address set street = %s, city = %s, zipcode = %s where address_id = %s;'
-            cursor.execute(query, (data['street'], data['city'], data['zipcode'], user_info[6]))
+            cursor.execute(query, (data['street'], data['city'], data['zipcode'], user_info[-1]))
 
         self.conn.commit()
         return user_info

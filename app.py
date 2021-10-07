@@ -76,11 +76,12 @@ def user_register():
 
 @app.route('/api/edit', methods=['PUT'])
 def user_edit():
-    if request.method == 'PUT':
-        data = request.json
-        return UserController().edit_user(data)
-    else:
-        return jsonify('ok')
+    data = request.form.copy()
+    data.update({'image_key': None})
+    if 'image' in request.files and request.files['image'].content_type is not None:
+        image = request.files['image']
+        data['image_key'] = upload_image_aws(data['user_id'], image)
+    return UserController().edit_user(data)
 
 
 @app.route('/index')
