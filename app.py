@@ -75,6 +75,7 @@ def user_register():
 
 
 @app.route('/api/edit', methods=['PUT'])
+@jwt_required()
 def user_edit():
     data = request.form.copy()
     data.update({'image_key': None})
