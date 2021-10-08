@@ -27,6 +27,38 @@ class UserDao(MainDao):
         result = cursor.fetchone()
         return result
 
+    def edit_user(self, data):
+        cursor = self.conn.cursor()
+        query = 'update users set first_name = %s, last_name = %s, image = %s, about = %s, ' \
+                'password = crypt(%s, gen_salt(\'bf\')) where user_id = %s returning user_id, first_name, last_name, ' \
+                ' image, about, password, address_id;'
+        cursor.execute(query, (data['first_name'].capitalize(), data['last_name'].capitalize(), data['image'],
+                               data['about'], data['password'], data['user_id']))
+        user_info = cursor.fetchone()
+        self.conn.commit()
+
+        if data['street'] is not None and data['city'] is not None and data['zipcode'] is not None:
+
+            if user_info[6] is None:
+                query1 = 'insert into address (street, city, zipcode) values (%s, %s, %s) returning address_id;'
+                cursor.execute(query1, (data['street'], data['city'], data['zipcode']))
+
+                address_info = cursor.fetchone()
+                self.conn.commit()
+
+                query2 = 'update users set address_id = %s where user_id = %s;'
+                cursor.execute(query2, (address_info[0], data['user_id']))
+
+            if user_info[6] is not None:
+                query = 'update address set street = %s, city = %s, zipcode = %s where address_id = %s;'
+                cursor.execute(query, (data['street'], data['city'], data['zipcode'], user_info[6]))
+
+        else:
+            return user_info
+
+        self.conn.commit()
+        return user_info
+
     def get_all_users(self, data):
         cursor = self.conn.cursor()
         query = 'select first_name, last_name, email ' \

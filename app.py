@@ -80,5 +80,14 @@ def get_users():
     return UserController().get_all_users(data)
 
 
+@app.route('/api/edit', methods=['PUT'])
+def user_edit():
+    if request.method == 'PUT':
+        data = request.json
+        return UserController().edit_user(data)
+    else:
+        return jsonify('ok')
+
+
 if __name__ == '__main__':
     app.run(debug=True)
