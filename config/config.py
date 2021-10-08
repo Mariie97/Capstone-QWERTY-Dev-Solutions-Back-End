@@ -1,3 +1,4 @@
+import os
 SECRET_KEY = '4451ae0bc6ad1a0004f0d48f3ed7f36f41c1a438c1289715'
 
 # Database credentials
@@ -16,6 +17,9 @@ JWT_ACCESS_TOKEN_EXPIRES_DAYS = 1
 
 
 # AWS S3 Bucket
+AWS_ACCESS_KEY_ID = os.environ.get('aws_access_key')
+AWS_SECRET_ACCESS_KEY = os.environ.get('aws_secret_key')
+AWS_REGION = os.environ.get('aws_region')
 AWS_UPLOAD_FOLDER = "uploads"
 AWS_BUCKET_NAME = "parapido"
 AWS_URL_EXPIRE_SECONDS = 86400

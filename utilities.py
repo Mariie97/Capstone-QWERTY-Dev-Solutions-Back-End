@@ -3,7 +3,8 @@ import re
 
 import boto3
 from werkzeug.utils import secure_filename
-from config.config import AWS_BUCKET_NAME, AWS_URL_EXPIRE_SECONDS, AWS_UPLOAD_FOLDER
+from config.config import AWS_BUCKET_NAME, AWS_URL_EXPIRE_SECONDS, AWS_UPLOAD_FOLDER, AWS_ACCESS_KEY_ID, \
+    AWS_SECRET_ACCESS_KEY, AWS_REGION
 
 account_type = {
     'student': '1',
@@ -72,7 +73,11 @@ def validate_profile_data(data):
 
 def generate_profile_pic_url(image_path):
     try:
-        s3_client = boto3.client('s3')
+        s3_client = boto3.client('s3',
+                                 aws_access_key_id=AWS_ACCESS_KEY_ID,
+                                 aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+                                 region_name=AWS_REGION,
+                                 )
         key = os.path.join(AWS_UPLOAD_FOLDER, image_path)
         presigned_url = s3_client.generate_presigned_url('get_object', Params={'Bucket': AWS_BUCKET_NAME, 'Key': key},
                                                          ExpiresIn=AWS_URL_EXPIRE_SECONDS)
@@ -85,7 +90,11 @@ def upload_image_aws(user_id, image_file):
     try:
         file_name = 'profile_pic_{user_id}.{type}'.format(user_id=user_id, type=image_file.content_type.split('/')[-1])
         image_file.save(os.path.join(AWS_UPLOAD_FOLDER, secure_filename(file_name)))
-        s3_client = boto3.client('s3')
+        s3_client = boto3.client('s3',
+                                 aws_access_key_id=AWS_ACCESS_KEY_ID,
+                                 aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+                                 region_name=AWS_REGION,
+                                 )
         bucket_file_name = f"{AWS_UPLOAD_FOLDER}/{file_name}"
         s3_client.upload_file(bucket_file_name, AWS_BUCKET_NAME, bucket_file_name)
         return file_name
