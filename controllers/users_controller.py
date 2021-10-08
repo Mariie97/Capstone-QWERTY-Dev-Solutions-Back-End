@@ -37,20 +37,20 @@ class UserController:
         else:
             return jsonify("Invalid credentials"), STATUS_CODE['unauthorized']
 
-    def edit_user_dict(self, data):
-        return {
-            'user_id': data[0],
-            'first_name': data[1],
-            'last_name': data[2],
-            'about': data[3],
-            'password': data[4],
-            'address_id': data[5],
-        }
+    def clean_data(self, data):
+        for param, value in data.items():
+            if value == '':
+                data[param] = None
 
     def edit_user(self, user_info):
         try:
+            self.clean_data(user_info)
             user = self.dao.edit_user(user_info)
-            return jsonify(self.edit_user_dict(user)), STATUS_CODE['ok']
+            if user is None:
+                return jsonify('There is not user with id={id}'.format(id=user_info['user_id'])), \
+                       STATUS_CODE['not_found']
+            else:
+                return jsonify("User ({id}) edited successfully!".format(id=user_info['user_id'])), STATUS_CODE['ok']
         except IntegrityError as e:
             return jsonify(e.pgerror), STATUS_CODE['bad_request']
 

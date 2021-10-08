@@ -1,7 +1,6 @@
 from datetime import timedelta, datetime, timezone
 
-import boto3
-from flask import Flask, jsonify, request, render_template, redirect
+from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, set_access_cookies, \
     unset_jwt_cookies, get_jwt
@@ -10,7 +9,8 @@ from config.config import JWT_SECRET_KEY, JWT_TOKEN_LOCATION, JWT_ACCESS_TOKEN_E
     AWS_UPLOAD_FOLDER, SECRET_KEY
 from controllers.main_controller import Controller
 from controllers.users_controller import UserController
-from utilities import validate_user_info, validate_login_data, STATUS_CODE, upload_image_aws, generate_profile_pic_url
+from utilities import validate_user_info, validate_login_data, STATUS_CODE, upload_image_aws, generate_profile_pic_url, \
+    validate_profile_data
 
 app = Flask(__name__)
 
@@ -21,7 +21,7 @@ app.config['UPLOAD_FOLDER'] = AWS_UPLOAD_FOLDER
 jwt = JWTManager(app)
 app.config["JWT_SECRET_KEY"] = JWT_SECRET_KEY
 app.config['JWT_TOKEN_LOCATION'] = JWT_TOKEN_LOCATION
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = JWT_ACCESS_TOKEN_EXPIRES_DAYS
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=JWT_ACCESS_TOKEN_EXPIRES_DAYS)
 
 
 @app.after_request
@@ -74,10 +74,14 @@ def user_register():
         return jsonify('Ok')
 
 
-@app.route('/api/edit', methods=['PUT'])
+@app.route('/api/edit_user', methods=['PUT'])
 @jwt_required()
 def user_edit():
     data = request.form.copy()
+    error_msg = validate_profile_data(data)
+    if error_msg is not None:
+        return jsonify(error_msg), STATUS_CODE['bad_request']
+
     data.update({'image_key': None})
     if 'image' in request.files and request.files['image'].content_type is not None:
         image = request.files['image']

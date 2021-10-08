@@ -53,6 +53,23 @@ def validate_login_data(data):
     return None
 
 
+def validate_profile_data(data):
+    expected_params = ['first_name', 'last_name', 'user_id', 'password', 'image', 'about', 'street', 'city', 'zipcode']
+
+    if data.__len__() == 0:
+        return "The following parameters are required: {expected}.".format(
+            expected=', '.join(expected_params),
+        )
+
+    for param in expected_params:
+        if param not in data:
+            return "The following parameters are required: {expected}.".format(
+                expected=', '.join(expected_params)
+            )
+
+    return None
+
+
 def generate_profile_pic_url(image_path):
     try:
         s3_client = boto3.client('s3')
