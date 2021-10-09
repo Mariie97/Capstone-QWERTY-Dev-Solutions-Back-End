@@ -1,5 +1,4 @@
 from datetime import timedelta, datetime, timezone
-from controllers.main_controller import Controller
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
@@ -7,7 +6,8 @@ from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_requir
     unset_jwt_cookies, get_jwt
 
 from controllers.users_controller import UserController
-from utilities import validate_user_info, validate_login_data, STATUS_CODE, validate_email
+from utilities import validate_user_info, validate_login_data, STATUS_CODE, SUPERUSER_ACCOUNT, CLIENT_ACCOUNT, \
+    STUDENT_ACCOUNT, validate_email
 
 app = Flask(__name__)
 
@@ -56,18 +56,28 @@ def logout():
     return response
 
 
-@app.route('/api/users', methods=['POST', 'GET'])
-def user_register():
-    if request.method == 'POST':
-        data = request.json
-        error_msg = validate_user_info(data)
-        if error_msg is None:
-            return UserController().create_user(data)
-        else:
-            return jsonify(error_msg), STATUS_CODE['bad_request']
+@app.route('/api/create_user', methods=['POST'])
+def create_user():
+    data = request.json
+    error_msg = validate_user_info(data)
+    if error_msg is None:
+        return UserController().create_user(data)
     else:
-        #Todo: Return a list with all users
-        return jsonify('Ok')
+        return jsonify(error_msg), STATUS_CODE['bad_request']
+
+
+@app.route('/api/users', methods=['GET'])
+@jwt_required()
+def get_users():
+    if request.json is None or 'type' not in request.json:
+        return jsonify('The following parameter is required: type'), STATUS_CODE['bad_request']
+
+    if request.json['type'] not in [STUDENT_ACCOUNT, CLIENT_ACCOUNT, SUPERUSER_ACCOUNT]:
+        return jsonify('Valid type: %s, %s, and %s' % (STUDENT_ACCOUNT, CLIENT_ACCOUNT, SUPERUSER_ACCOUNT)), \
+               STATUS_CODE['bad_request']
+
+    data = request.json
+    return UserController().get_all_users(data)
 
 
 @app.route('/api/edit', methods=['PUT'])
