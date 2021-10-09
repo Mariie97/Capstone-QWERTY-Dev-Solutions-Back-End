@@ -19,6 +19,18 @@ STATUS_CODE = {
 }
 
 
+def validate_password_info(req_json):
+    expected_params = ['password', 'email']
+    if req_json is None:
+        return 'The following parameters are required: ' + concat_list_to_string(expected_params)
+
+    for param in expected_params:
+        if param not in req_json:
+            return 'The following parameters are required: ' + concat_list_to_string(expected_params)
+
+    return None
+
+
 def validate_email(email):
     return re.match(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b$', email)
 

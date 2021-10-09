@@ -29,11 +29,11 @@ class UserDao(MainDao):
 
     def edit_user(self, data):
         cursor = self.conn.cursor()
-        query = 'update users set first_name = %s, last_name = %s, image = %s, about = %s, ' \
-                'password = crypt(%s, gen_salt(\'bf\')) where user_id = %s returning user_id, first_name, last_name, ' \
-                ' image, about, password, address_id;'
+        query = 'update users set first_name = %s, last_name = %s, image = %s, about = %s ' \
+                'where user_id = %s returning user_id, first_name, last_name, ' \
+                ' image, about, address_id;'
         cursor.execute(query, (data['first_name'].capitalize(), data['last_name'].capitalize(), data['image'],
-                               data['about'], data['password'], data['user_id']))
+                               data['about'], data['user_id']))
         user_info = cursor.fetchone()
         self.conn.commit()
 
@@ -72,15 +72,9 @@ class UserDao(MainDao):
 
     def retrieve_questions(self, user_email):
         cursor = self.conn.cursor()
-        query = 'select user_id from users where email = %s;'
+        query = 'select type, answer from questions where user_id in (select user_id from users where email = %s);'
         cursor.execute(query, (user_email['email'],))
-        result = cursor.fetchone()
-        self.conn.commit()
-
-        query2 = 'select type, answer from questions where user_id = %s;'
-        cursor.execute(query2, (result[0],))
         questions = cursor.fetchall()
-        self.conn.commit()
         question1, answer1 = questions[0]
         question2, answer2 = questions[1]
         security = [question1, question2, answer1, answer2]
@@ -92,6 +86,10 @@ class UserDao(MainDao):
         query = 'update users set password = crypt(%s, gen_salt(\'bf\')) where email = %s returning email, password;'
         cursor.execute(query, (user_email['password'], user_email['email']))
         info = cursor.fetchone()
+
+        if info is None:
+            return None
+
         self.conn.commit()
 
         return info

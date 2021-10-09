@@ -67,10 +67,14 @@ class UserController:
             'password': data[5],
             'address_id': data[6],
         }
+
     def retrieve_questions(self, user_email):
         try:
             user = self.dao.retrieve_questions(user_email)
-            return jsonify(self.security_questions_dict(user)), STATUS_CODE['ok']
+            if user is None:
+                return jsonify("User not found"), STATUS_CODE['not_found']
+            else:
+                return jsonify(self.security_questions_dict(user)), STATUS_CODE['ok']
         except IntegrityError as e:
             return jsonify(e.pgerror), STATUS_CODE['bad_request']
 
@@ -81,9 +85,13 @@ class UserController:
             return jsonify(self.edit_user_dict(user)), 201
         except IntegrityError as e:
             return jsonify(e.pgerror), 400
+
     def change_password(self, user_email):
         try:
             user = self.dao.change_password(user_email)
-            return jsonify({'email': user[0], 'password': user[1]}), STATUS_CODE['ok']
+            if user is None:
+                return jsonify("User not found"), STATUS_CODE['not_found']
+            else:
+                return jsonify({'email': user[0], 'password': user[1]}), STATUS_CODE['ok']
         except IntegrityError as e:
             return jsonify(e.pgerror), STATUS_CODE['bad_request']

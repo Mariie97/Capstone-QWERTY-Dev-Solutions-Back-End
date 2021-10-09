@@ -7,7 +7,7 @@ from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_requir
 
 from controllers.users_controller import UserController
 from utilities import validate_user_info, validate_login_data, STATUS_CODE, SUPERUSER_ACCOUNT, CLIENT_ACCOUNT, \
-    STUDENT_ACCOUNT, validate_email
+    STUDENT_ACCOUNT, validate_email, validate_password_info
 
 app = Flask(__name__)
 
@@ -100,16 +100,11 @@ def change_password():
             return jsonify(error_msg), STATUS_CODE['not_found']
     else:
         data = request.json
-        error_msg = validate_email(data['email'])
-        if error_msg is not None:
+        error_msg = validate_password_info(data)
+        if error_msg is None:
             return UserController().change_password(data)
         else:
             return jsonify(error_msg), STATUS_CODE['not_found']
-
-
-@app.route('/index')
-def index():
-    return Controller().get_message()
 
 
 if __name__ == '__main__':
