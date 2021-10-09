@@ -6,6 +6,10 @@ from werkzeug.utils import secure_filename
 from config.config import AWS_BUCKET_NAME, AWS_URL_EXPIRE_SECONDS, AWS_UPLOAD_FOLDER, AWS_ACCESS_KEY_ID, \
     AWS_SECRET_ACCESS_KEY, AWS_REGION
 
+STUDENT_ACCOUNT = '1'
+CLIENT_ACCOUNT = '2'
+SUPERUSER_ACCOUNT = '3'
+
 account_type = {
     'student': '1',
     'client': '2',
@@ -25,12 +29,18 @@ def validate_email(email):
     return re.match(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b$', email)
 
 
+def concat_list_to_string(list):
+    return ', '.join(list)
+
+
 def validate_user_info(data):
     expected_params = ['first_name', 'last_name', 'email', 'password', 'type', 'q_type1', 'q_type2', 'ans1', 'ans2']
+    if data is None:
+        return 'The following parameters are required: ' + concat_list_to_string(expected_params)
+
     for param in expected_params:
         if param not in data:
-            concat_list = ', '.join(expected_params)
-            return 'The following parameters are required: ' + concat_list
+            return 'The following parameters are required: ' + concat_list_to_string(expected_params)
 
     if data['type'] == account_type['student'] and re.match(r'^.+@upr\.edu$', data['email']) is None:
         return 'A upr email is needed to register as student'
@@ -43,10 +53,12 @@ def validate_user_info(data):
 
 def validate_login_data(data):
     expected_params = ['email', 'password']
+    if data is None:
+        return 'The following parameters are required: ' + concat_list_to_string(expected_params)
+
     for param in expected_params:
         if param not in data:
-            concat_list = ', '.join(expected_params)
-            return 'The following parameters are required: ' + concat_list
+            return 'The following parameters are required: ' + concat_list_to_string(expected_params)
 
     if validate_email(data['email']) is None:
         return 'Email provided is not valid'
