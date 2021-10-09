@@ -37,6 +37,18 @@ class UserController:
         else:
             return jsonify("Invalid credentials"), STATUS_CODE['unauthorized']
 
+    def get_all_users(self, data):
+        users = self.dao.get_all_users(data)
+        result_list = []
+        for row in users:
+            obj = {
+                'first_name': row[0],
+                'last_name': row[1],
+                'email': row[2],
+            }
+            result_list.append(obj)
+        return jsonify(result_list), STATUS_CODE['ok']
+
     def edit_user_dict(self, data):
         return {
             'user_id': data[0],
