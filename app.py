@@ -8,7 +8,7 @@ from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_requir
 from controllers.jobs_controller import JobController
 from controllers.users_controller import UserController
 from utilities import validate_user_info, validate_login_data, STATUS_CODE, SUPERUSER_ACCOUNT, CLIENT_ACCOUNT, \
-    STUDENT_ACCOUNT
+    STUDENT_ACCOUNT, validate_assign_job_data
 
 app = Flask(__name__)
 
@@ -94,10 +94,21 @@ def user_edit():
 @jwt_required()
 def job_requests_list():
     if request.json is None or 'job_id' not in request.json:
-        return jsonify('The following parameter is required: job_id'), STATUS_CODE['ok']
+        return jsonify('The following parameter is required: job_id'), STATUS_CODE['bad_request']
 
     data = request.json
     return JobController().get_requests_list(data)
+
+
+@app.route('/api/assign_job', methods=['PUT'])
+@jwt_required()
+def assign_job_worker():
+    error_msg = validate_assign_job_data(request.json)
+    if error_msg is not None:
+        return jsonify(error_msg), STATUS_CODE['bad_request']
+
+    data = request.json
+    return JobController().set_job_worker(data)
 
 
 if __name__ == '__main__':

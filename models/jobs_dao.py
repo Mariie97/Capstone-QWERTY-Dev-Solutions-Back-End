@@ -1,4 +1,5 @@
 from models.main_dao import MainDao
+from utilities import JOB_REQUESTS_STATE
 
 
 class JobDao(MainDao):
@@ -16,3 +17,18 @@ class JobDao(MainDao):
             requests_list.append(row)
         return requests_list
 
+    def set_job_worker(self, data):
+        cursor = self.conn.cursor()
+        query = 'update jobs set student_id = %s where job_id=%s;'
+        cursor.execute(query, (data['student_id'], data['job_id']))
+        if cursor.rowcount == 0:
+            return False
+
+        query = 'update requests set state = %s where job_id=%s;'
+        cursor.execute(query, (JOB_REQUESTS_STATE['closed'], data['job_id']))
+
+        if cursor.rowcount == 0:
+            return False
+
+        self.conn.commit()
+        return True

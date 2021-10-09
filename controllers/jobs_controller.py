@@ -24,3 +24,15 @@ class JobController:
             # request['image'] =
             list.append(request)
         return jsonify(list), STATUS_CODE['ok']
+
+    def set_job_worker(self, data):
+        is_updated = self.dao.set_job_worker(data)
+        if is_updated is None:
+            return jsonify("Could not update the job at this moment"), STATUS_CODE['server_error']
+
+        if not is_updated:
+            return jsonify("Job {job_id} or related requests for that job could not be found".format(
+                job_id=data['job_id'])),  STATUS_CODE['not_found']
+
+        return jsonify("Job {job_id} updated successfully!".format(job_id=data['job_id'])), STATUS_CODE['ok']
+
