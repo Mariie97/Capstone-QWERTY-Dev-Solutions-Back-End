@@ -5,6 +5,7 @@ from flask_cors import CORS
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, set_access_cookies, \
     unset_jwt_cookies, get_jwt
 
+from controllers.jobs_controller import JobController
 from controllers.users_controller import UserController
 from utilities import validate_user_info, validate_login_data, STATUS_CODE, SUPERUSER_ACCOUNT, CLIENT_ACCOUNT, \
     STUDENT_ACCOUNT
@@ -87,6 +88,16 @@ def user_edit():
         return UserController().edit_user(data)
     else:
         return jsonify('ok')
+
+
+@app.route('/api/job_requests', methods=['GET'])
+@jwt_required()
+def job_requests_list():
+    if request.json is None or 'job_id' not in request.json:
+        return jsonify('The following parameter is required: job_id'), STATUS_CODE['ok']
+
+    data = request.json
+    return JobController().get_requests_list(data)
 
 
 if __name__ == '__main__':
