@@ -25,6 +25,23 @@ class JobController:
             list.append(request)
         return jsonify(list), STATUS_CODE['ok']
 
+    def get_student_requests_list(self, data):
+        requests = self.dao.get_student_requests_list(data)
+        if requests is None:
+            return jsonify("Student {id} has no requests.".format(id=data['student_id'])), STATUS_CODE['not_found']
+        else:
+            list = []
+            for row in requests:
+                request = {
+                    'job_id': row[0],
+                    'title': row[1],
+                    'price': row[2],
+                    'categories': row[3],
+                    'date': row[4],
+                }
+                list.append(request)
+            return jsonify(list), STATUS_CODE['ok']
+
     def set_job_worker(self, data):
         is_updated = self.dao.set_job_worker(data)
         if is_updated is None:

@@ -12,10 +12,24 @@ class JobDao(MainDao):
                 'order by date asc;'
 
         cursor.execute(query, (data['job_id'], ))
-        requests_list = []
-        for row in cursor:
-            requests_list.append(row)
-        return requests_list
+        requests_list = self.convert_to_list(cursor)
+        if requests_list.__len__() == 0:
+            return None
+        else:
+            return requests_list
+
+    def get_student_requests_list(self, data):
+        cursor = self.conn.cursor()
+        query = 'select R.job_id, title, price, categories, date ' \
+                'from (requests as R inner join jobs as J using(job_id)) inner join users as U on J.owner_id=U.user_id ' \
+                'where R.student_id=%s and state=%s ' \
+                'order by date asc;'
+        cursor.execute(query, (data['student_id'], JOB_REQUESTS_STATE['open']))
+        requests_list = self.convert_to_list(cursor)
+        if requests_list.__len__() == 0:
+            return None
+        else:
+            return requests_list
 
     def set_job_worker(self, data):
         cursor = self.conn.cursor()

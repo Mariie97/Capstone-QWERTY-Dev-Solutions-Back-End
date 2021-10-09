@@ -100,6 +100,16 @@ def job_requests_list():
     return JobController().get_requests_list(data)
 
 
+@app.route('/api/student_requests', methods=['GET'])
+@jwt_required()
+def student_requests_list():
+    if request.json is None or 'student_id' not in request.json:
+        return jsonify('The following parameter is required: student_id'), STATUS_CODE['bad_request']
+
+    data = request.json
+    return JobController().get_student_requests_list(data)
+
+
 @app.route('/api/assign_job', methods=['PUT'])
 @jwt_required()
 def assign_job_worker():
