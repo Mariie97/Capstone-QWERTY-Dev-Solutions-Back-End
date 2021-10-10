@@ -43,9 +43,9 @@ class JobController:
             return jsonify(list), STATUS_CODE['ok']
 
     def set_job_worker(self, data):
-        is_updated = self.dao.set_job_worker(data)
+        is_updated, error_msg = self.dao.set_job_worker(data)
         if is_updated is None:
-            return jsonify("Could not update the job at this moment"), STATUS_CODE['server_error']
+            return jsonify(error_msg), STATUS_CODE['bad_request']
 
         if not is_updated:
             return jsonify("Job {job_id} or related requests for that job could not be found".format(
