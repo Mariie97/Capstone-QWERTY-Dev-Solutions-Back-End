@@ -15,6 +15,14 @@ JOB_REQUESTS_STATE = {
     'closed': '2'
 }
 
+JOB_STATE = {
+    'posted': '1',
+    'in_process': '2',
+    'completed': '3',
+    'cancelled': '4',
+    'deleted': '5',
+}
+
 STATUS_CODE = {
     'ok': 200,
     'created': 201,

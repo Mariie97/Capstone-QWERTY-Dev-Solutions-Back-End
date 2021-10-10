@@ -1,5 +1,5 @@
 from models.main_dao import MainDao
-from utilities import JOB_REQUESTS_STATE
+from utilities import JOB_REQUESTS_STATE, JOB_STATE
 
 
 class JobDao(MainDao):
@@ -33,8 +33,8 @@ class JobDao(MainDao):
 
     def set_job_worker(self, data):
         cursor = self.conn.cursor()
-        query = 'update jobs set student_id = %s where job_id=%s;'
-        cursor.execute(query, (data['student_id'], data['job_id']))
+        query = 'update jobs set student_id = %s, status = %s  where job_id=%s;'
+        cursor.execute(query, (data['student_id'], JOB_STATE['in_process'], data['job_id']))
         if cursor.rowcount == 0:
             return False
 
