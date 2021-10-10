@@ -97,14 +97,14 @@ def change_password():
         if error_msg is not None:
             return UserController().retrieve_questions(data)
         else:
-            return jsonify(error_msg), STATUS_CODE['not_found']
+            return jsonify(error_msg), STATUS_CODE['bad_request']
     else:
         data = request.json
         error_msg = validate_password_info(data)
         if error_msg is None:
             return UserController().change_password(data)
         else:
-            return jsonify(error_msg), STATUS_CODE['not_found']
+            return jsonify(error_msg), STATUS_CODE['bad_request']
 
 
 if __name__ == '__main__':

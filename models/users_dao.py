@@ -75,6 +75,8 @@ class UserDao(MainDao):
         query = 'select type, answer from questions where user_id in (select user_id from users where email = %s);'
         cursor.execute(query, (user_email['email'],))
         questions = cursor.fetchall()
+        if questions is None:
+            return None
         question1, answer1 = questions[0]
         question2, answer2 = questions[1]
         security = [question1, question2, answer1, answer2]
@@ -86,10 +88,8 @@ class UserDao(MainDao):
         query = 'update users set password = crypt(%s, gen_salt(\'bf\')) where email = %s returning email, password;'
         cursor.execute(query, (user_email['password'], user_email['email']))
         info = cursor.fetchone()
-
         if info is None:
             return None
-
         self.conn.commit()
 
         return info
