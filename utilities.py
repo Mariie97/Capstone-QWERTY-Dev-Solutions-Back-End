@@ -27,7 +27,8 @@ def validate_password_info(req_json):
     for param in expected_params:
         if param not in req_json:
             return 'The following parameters are required: ' + concat_list_to_string(expected_params)
-
+    if validate_email(req_json['email']) is None:
+        return 'Email provided is not valid'
     return None
 
 
