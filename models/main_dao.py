@@ -1,5 +1,5 @@
 import psycopg2
-from config.db_config import db_credentials
+from config.config import db_credentials
 
 
 class MainDao:
@@ -14,12 +14,3 @@ class MainDao:
             )
         
         self.conn = psycopg2.connect(connection_url)
-
-    def get_message(self):
-        cursor = self.conn.cursor()
-        query = 'select * from test;'
-        cursor.execute(query)
-        result = []
-        for row in cursor:
-            result.append(row)
-        return result
