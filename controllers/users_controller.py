@@ -51,12 +51,16 @@ class UserController:
             'cancellations': data[9],
             'street': data[10],
             'city': data[11],
-            'zipcode': data[12]
+            'zipcode': data[12],
+            'rate': data[13]
         }
 
     def get_user_info(self, userid):
         try:
             user = self.dao.get_user_info(userid)
-            return jsonify(self.get_user_info_dict(user)), STATUS_CODE['ok']
+            if user is None:
+                return jsonify("User not found"), STATUS_CODE['not_found']
+            else:
+                return jsonify(self.get_user_info_dict(user)), STATUS_CODE['ok']
         except IntegrityError as e:
             return jsonify(e.pgerror), STATUS_CODE['bad_request']
