@@ -57,16 +57,10 @@ class UserController:
             result_list.append(obj)
         return jsonify(result_list), STATUS_CODE['ok']
 
-    def edit_user_dict(self, data):
-        return {
-            'user_id': data[0],
-            'first_name': data[1],
-            'last_name': data[2],
-            'image': data[3],
-            'about': data[4],
-            'password': data[5],
-            'address_id': data[6],
-        }
+    def clean_data(self, data):
+        for param, value in data.items():
+            if value == '':
+                data[param] = None
 
     def retrieve_questions(self, user_email):
         try:
@@ -79,12 +73,17 @@ class UserController:
             return jsonify(e.pgerror), STATUS_CODE['bad_request']
 
     def edit_user(self, user_info):
-        dao = UserDao()
         try:
-            user = dao.edit_user(user_info)
-            return jsonify(self.edit_user_dict(user)), 201
+            self.clean_data(user_info)
+            user = self.dao.edit_user(user_info)
+            if user is None:
+                return jsonify('There is not user with id={id}'.format(id=user_info['user_id'])), \
+                       STATUS_CODE['not_found']
+            else:
+                return jsonify("User ({id}) edited successfully!".format(id=user_info['user_id'])), STATUS_CODE['ok']
         except IntegrityError as e:
-            return jsonify(e.pgerror), 400
+            return jsonify(e.pgerror), STATUS_CODE['bad_request']
+
 
     def change_password(self, user_email):
         try:
