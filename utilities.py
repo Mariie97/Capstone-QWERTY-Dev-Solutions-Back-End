@@ -80,7 +80,7 @@ def validate_login_data(data):
 
 
 def validate_profile_data(data):
-    expected_params = ['first_name', 'last_name', 'user_id', 'password', 'about', 'street', 'city', 'zipcode']
+    expected_params = ['first_name', 'last_name', 'user_id', 'about', 'street', 'city', 'zipcode']
 
     if data.__len__() == 0:
         return "The following parameters are required: {expected}.".format(
