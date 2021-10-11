@@ -61,5 +61,4 @@ class UserDao(MainDao):
                          query_info[6], query_info[7], query_info[8], query_info[9], query_info[10], query_info[11],
                          query_info[12], new_number]
 
-
         return user_info
