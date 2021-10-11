@@ -10,7 +10,7 @@ itsdangerous==2.0.1
 Jinja2==3.0.1
 MarkupSafe==2.0.1
 Pillow==8.3.2
-pkg_resources==0.0.0
+python-dotenv
 psycopg2-binary==2.9.1
 PyJWT==2.1.0
 reportlab==3.6.1

@@ -67,7 +67,7 @@ def validate_login_data(data):
 
 
 def validate_profile_data(data):
-    expected_params = ['first_name', 'last_name', 'user_id', 'password', 'image', 'about', 'street', 'city', 'zipcode']
+    expected_params = ['first_name', 'last_name', 'user_id', 'password', 'about', 'street', 'city', 'zipcode']
 
     if data.__len__() == 0:
         return "The following parameters are required: {expected}.".format(
@@ -100,13 +100,16 @@ def generate_profile_pic_url(image_path):
 
 def upload_image_aws(user_id, image_file):
     try:
-        file_name = 'profile_pic_{user_id}.{type}'.format(user_id=user_id, type=image_file.content_type.split('/')[-1])
-        image_file.save(os.path.join(AWS_UPLOAD_FOLDER, secure_filename(file_name)))
         s3_client = boto3.client('s3',
                                  aws_access_key_id=AWS_ACCESS_KEY_ID,
                                  aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
                                  region_name=AWS_REGION,
                                  )
+        if not os.path.exists(AWS_UPLOAD_FOLDER):
+            os.makedirs(AWS_UPLOAD_FOLDER)
+
+        file_name = 'profile_pic_{user_id}.{type}'.format(user_id=user_id, type=image_file.content_type.split('/')[-1])
+        image_file.save(os.path.join(AWS_UPLOAD_FOLDER, secure_filename(file_name)))
         bucket_file_name = f"{AWS_UPLOAD_FOLDER}/{file_name}"
         s3_client.upload_file(bucket_file_name, AWS_BUCKET_NAME, bucket_file_name)
         return file_name
