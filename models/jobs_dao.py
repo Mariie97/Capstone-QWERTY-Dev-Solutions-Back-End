@@ -6,6 +6,11 @@ from utilities import JOB_REQUESTS_STATE, JOB_STATE
 
 class JobDao(MainDao):
 
+    def create_job(self, data):
+        cursor = self.conn.cursor()
+        query = 'insert into users (owner_id, title, description, price, category) ' \
+                'values (%s, %s, %s, %s, %s) returning owner_id, title, description, price, category;'
+
     def get_requests_list(self, data):
         cursor = self.conn.cursor()
         query = 'select user_id, first_name, last_name, image, date ' \

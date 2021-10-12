@@ -1,4 +1,5 @@
 from flask import jsonify
+from psycopg2 import IntegrityError
 
 from models.jobs_dao import JobDao
 from utilities import STATUS_CODE
@@ -9,8 +10,21 @@ class JobController:
     def __init__(self):
         self.dao = JobDao()
 
+    def job_creation_dict(self, data):
+        return{
+            'owner_id': data[0],
+            'title': data[1],
+            'description': data[2],
+            'price': data[3],
+            'category': data[4]
+        }
+
     def create_job(self, data):
-        return None
+        try:
+            job = self.dao.create_job(data)
+            return jsonify(self.job_creation_dict(job)), STATUS_CODE['created']
+        except IntegrityError as e:
+            return jsonify(e.pgerror), STATUS_CODE['bad_request']
 
     def get_requests_list(self, data):
         requests = self.dao.get_requests_list(data)
