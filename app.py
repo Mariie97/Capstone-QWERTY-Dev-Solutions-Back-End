@@ -156,7 +156,7 @@ def assign_job_worker():
 
 
 @app.route('/api/create_job', methods=['POST'])
-@jwt_required()
+#@jwt_required()
 def create_job():
     error_msg = validate_create_job(request.json)
     if error_msg is not None:

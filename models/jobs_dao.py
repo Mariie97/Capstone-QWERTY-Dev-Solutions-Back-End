@@ -8,8 +8,45 @@ class JobDao(MainDao):
 
     def create_job(self, data):
         cursor = self.conn.cursor()
-        query = 'insert into users (owner_id, title, description, price, category) ' \
-                'values (%s, %s, %s, %s, %s) returning owner_id, title, description, price, category;'
+
+        query = 'insert into address (street, city, zipcode)' \
+                'values (%s, %s, %s) returning address_id;'
+        cursor.execute(query, (data['street'], data['city'], data['zipcode']))
+        add_id = cursor.fetchone()
+        self.conn.commit()
+
+        query = 'insert into jobs (owner_id, title, description, price, categories, address_id) ' \
+                'values (%s, %s, %s, %s, %s, %s) returning job_id, owner_id, title, description, price, categories;'
+        cursor.execute(query, (data['user_id'], data['title'], data['description'], data['price'], data['categories'],
+                               add_id[0]))
+        job_info = cursor.fetchone()
+        job_id = job_info[0]
+        self.conn.commit()
+
+        self.set_job_days(job_id, data['d'], data['l'], data['m'], data['w'], data['j'], data['v'], data['s'])
+
+        return job_info
+
+    def set_job_days(self, job_id, dom, lun, mar, wed, jue, vie, sab):
+        cursor = self.conn.cursor()
+        query = 'insert into days (job_id, weekday) ' \
+                'values (%s, %s);'
+        if dom == '1':
+            cursor.execute(query, (job_id, '1'))
+        if lun == '1':
+            cursor.execute(query, (job_id, '2'))
+        if mar == '1':
+            cursor.execute(query, (job_id, '3'))
+        if wed == '1':
+            cursor.execute(query, (job_id, '4'))
+        if jue == '1':
+            cursor.execute(query, (job_id, '5'))
+        if vie == '1':
+            cursor.execute(query, (job_id, '6'))
+        if sab == '1':
+            cursor.execute(query, (job_id, '7'))
+        self.conn.commit()
+        self.conn.close()
 
     def get_requests_list(self, data):
         cursor = self.conn.cursor()
@@ -18,7 +55,7 @@ class JobDao(MainDao):
                 'where job_id=%s ' \
                 'order by date asc;'
 
-        cursor.execute(query, (data['job_id'], ))
+        cursor.execute(query, (data['job_id'],))
         requests_list = self.convert_to_list(cursor)
         if requests_list.__len__() == 0:
             return None
@@ -58,4 +95,3 @@ class JobDao(MainDao):
             return None, error.pgerror
         finally:
             self.conn.close()
-

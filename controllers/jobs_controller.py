@@ -12,11 +12,12 @@ class JobController:
 
     def job_creation_dict(self, data):
         return{
-            'owner_id': data[0],
-            'title': data[1],
-            'description': data[2],
-            'price': data[3],
-            'category': data[4]
+            'job_id': data[0],
+            'owner_id': data[1],
+            'title': data[2],
+            'description': data[3],
+            'price': data[4],
+            'category': data[5]
         }
 
     def create_job(self, data):
