@@ -25,6 +25,19 @@ STATUS_CODE = {
 }
 
 
+def validate_password_info(req_json):
+    expected_params = ['password', 'email']
+    if req_json is None:
+        return 'The following parameters are required: ' + concat_list_to_string(expected_params)
+
+    for param in expected_params:
+        if param not in req_json:
+            return 'The following parameters are required: ' + concat_list_to_string(expected_params)
+    if validate_email(req_json['email']) is None:
+        return 'Email provided is not valid'
+    return None
+
+
 def validate_email(email):
     return re.match(r'\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b$', email)
 
@@ -67,7 +80,7 @@ def validate_login_data(data):
 
 
 def validate_profile_data(data):
-    expected_params = ['first_name', 'last_name', 'user_id', 'password', 'about', 'street', 'city', 'zipcode']
+    expected_params = ['first_name', 'last_name', 'user_id', 'about', 'street', 'city', 'zipcode']
 
     if data.__len__() == 0:
         return "The following parameters are required: {expected}.".format(

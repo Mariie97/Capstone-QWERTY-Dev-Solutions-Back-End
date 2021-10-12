@@ -5,10 +5,13 @@ from flask_cors import CORS
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, set_access_cookies, \
     unset_jwt_cookies, get_jwt
 
-from config.config import JWT_SECRET_KEY, JWT_TOKEN_LOCATION, JWT_ACCESS_TOKEN_EXPIRES_DAYS, AWS_UPLOAD_FOLDER, SECRET_KEY
+from config.config import JWT_SECRET_KEY, JWT_TOKEN_LOCATION, JWT_ACCESS_TOKEN_EXPIRES_DAYS, AWS_BUCKET_NAME, \
+    AWS_UPLOAD_FOLDER, SECRET_KEY
 from controllers.users_controller import UserController
-from utilities import SUPERUSER_ACCOUNT, CLIENT_ACCOUNT, STUDENT_ACCOUNT
-from utilities import validate_user_info, validate_login_data, STATUS_CODE, upload_image_aws, validate_profile_data
+from utilities import validate_user_info, validate_login_data, STATUS_CODE, SUPERUSER_ACCOUNT, CLIENT_ACCOUNT, \
+    STUDENT_ACCOUNT
+from utilities import validate_user_info, validate_login_data, STATUS_CODE, upload_image_aws, generate_profile_pic_url, \
+    validate_profile_data
 
 app = Flask(__name__)
 
@@ -95,6 +98,24 @@ def user_edit():
         image = request.files['image']
         data['image_key'] = upload_image_aws(data['user_id'], image)
     return UserController().edit_user(data)
+
+
+@app.route('/api/change_password', methods=['GET', 'PUT'])
+def change_password():
+    if request.method == 'GET':
+        data = request.json
+        error_msg = validate_email(data['email'])
+        if error_msg is not None:
+            return UserController().retrieve_questions(data)
+        else:
+            return jsonify(error_msg), STATUS_CODE['bad_request']
+    else:
+        data = request.json
+        error_msg = validate_password_info(data)
+        if error_msg is None:
+            return UserController().change_password(data)
+        else:
+            return jsonify(error_msg), STATUS_CODE['bad_request']
 
 
 if __name__ == '__main__':

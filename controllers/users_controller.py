@@ -19,6 +19,14 @@ class UserController:
             'type': data[4],
         }
 
+    def security_questions_dict(self, data):
+        return {
+            'question_1': data[0],
+            'question_2': data[1],
+            'answer_1': data[2],
+            'answer_2': data[3]
+        }
+
     def create_user(self, user_info):
         try:
             user = self.dao.create_user(user_info)
@@ -54,6 +62,16 @@ class UserController:
             if value == '':
                 data[param] = None
 
+    def retrieve_questions(self, user_email):
+        try:
+            user = self.dao.retrieve_questions(user_email)
+            if user is None:
+                return jsonify("User not found"), STATUS_CODE['not_found']
+            else:
+                return jsonify(self.security_questions_dict(user)), STATUS_CODE['ok']
+        except IntegrityError as e:
+            return jsonify(e.pgerror), STATUS_CODE['bad_request']
+
     def edit_user(self, user_info):
         try:
             self.clean_data(user_info)
@@ -66,3 +84,12 @@ class UserController:
         except IntegrityError as e:
             return jsonify(e.pgerror), STATUS_CODE['bad_request']
 
+    def change_password(self, user_email):
+        try:
+            user = self.dao.change_password(user_email)
+            if user is None:
+                return jsonify("User not found"), STATUS_CODE['not_found']
+            else:
+                return jsonify({'email': user[0], 'password': user[1]}), STATUS_CODE['ok']
+        except IntegrityError as e:
+            return jsonify(e.pgerror), STATUS_CODE['bad_request']
