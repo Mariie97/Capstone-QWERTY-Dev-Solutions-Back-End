@@ -105,6 +105,18 @@ def validate_assign_job_data(data):
     return None
 
 
+def validate_create_job(data):
+    expected_params = ['owner_id', 'title', 'description', 'price', 'category']
+    if data is None:
+        return 'The following parameters are required: ' + concat_list_to_string(expected_params)
+
+    for param in expected_params:
+        if param not in data:
+            return 'The following parameters are required: ' + concat_list_to_string(expected_params)
+
+    return None
+
+
 def validate_profile_data(data):
     expected_params = ['first_name', 'last_name', 'user_id', 'about', 'street', 'city', 'zipcode']
 

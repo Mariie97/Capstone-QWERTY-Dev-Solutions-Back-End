@@ -11,7 +11,7 @@ from controllers.jobs_controller import JobController
 from controllers.users_controller import UserController
 from utilities import validate_user_info, validate_login_data, STATUS_CODE, SUPERUSER_ACCOUNT, CLIENT_ACCOUNT, \
     STUDENT_ACCOUNT, validate_password_info, validate_email, upload_image_aws, generate_profile_pic_url, \
-    validate_profile_data, validate_assign_job_data
+    validate_profile_data, validate_assign_job_data, validate_create_job
 
 app = Flask(__name__)
 
@@ -153,6 +153,17 @@ def assign_job_worker():
 
     data = request.json
     return JobController().set_job_worker(data)
+
+
+@app.route('/api/create_job', methods=['POST'])
+@jwt_required()
+def create_job():
+    error_msg = validate_create_job(request.json)
+    if error_msg is not None:
+        return jsonify(error_msg), STATUS_CODE['bad_request']
+
+    data = request.json
+    return JobController().create_job(data)
 
 
 if __name__ == '__main__':

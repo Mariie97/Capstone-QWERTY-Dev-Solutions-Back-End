@@ -9,6 +9,9 @@ class JobController:
     def __init__(self):
         self.dao = JobDao()
 
+    def create_job(self, data):
+        return None
+
     def get_requests_list(self, data):
         requests = self.dao.get_requests_list(data)
         list = []
@@ -52,4 +55,3 @@ class JobController:
                 job_id=data['job_id'])),  STATUS_CODE['not_found']
 
         return jsonify("Job {job_id} updated successfully!".format(job_id=data['job_id'])), STATUS_CODE['ok']
-
