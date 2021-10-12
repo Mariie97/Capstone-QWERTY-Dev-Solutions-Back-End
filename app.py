@@ -96,6 +96,7 @@ def user_edit():
         data['image_key'] = upload_image_aws(data['user_id'], image)
     return UserController().edit_user(data)
 
+
 @app.route('/api/user_info', methods=['GET'])
 def user_info():
     data = request.json
