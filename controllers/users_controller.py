@@ -16,7 +16,7 @@ class UserController:
             'first_name': data[1],
             'last_name': data[2],
             'email': data[3],
-            'type': data[4]
+            'type': data[4],
         }
 
     def create_user(self, user_info):
@@ -54,6 +54,35 @@ class UserController:
             'zipcode': data[12],
             'rate': data[13]
         }
+
+    def get_all_users(self, data):
+        users = self.dao.get_all_users(data)
+        result_list = []
+        for row in users:
+            obj = {
+                'first_name': row[0],
+                'last_name': row[1],
+                'email': row[2],
+            }
+            result_list.append(obj)
+        return jsonify(result_list), STATUS_CODE['ok']
+
+    def clean_data(self, data):
+        for param, value in data.items():
+            if value == '':
+                data[param] = None
+
+    def edit_user(self, user_info):
+        try:
+            self.clean_data(user_info)
+            user = self.dao.edit_user(user_info)
+            if user is None:
+                return jsonify('There is not user with id={id}'.format(id=user_info['user_id'])), \
+                       STATUS_CODE['not_found']
+            else:
+                return jsonify("User ({id}) edited successfully!".format(id=user_info['user_id'])), STATUS_CODE['ok']
+        except IntegrityError as e:
+            return jsonify(e.pgerror), STATUS_CODE['bad_request']
 
     def get_user_info(self, userid):
         try:

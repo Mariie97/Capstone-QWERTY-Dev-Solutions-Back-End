@@ -1,23 +1,25 @@
 from datetime import timedelta, datetime, timezone
-from controllers.main_controller import Controller
 
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, set_access_cookies, \
     unset_jwt_cookies, get_jwt
 
+from config.config import JWT_SECRET_KEY, JWT_TOKEN_LOCATION, JWT_ACCESS_TOKEN_EXPIRES_DAYS, AWS_UPLOAD_FOLDER, SECRET_KEY
 from controllers.users_controller import UserController
-from utilities import validate_user_info, validate_login_data, STATUS_CODE
+from utilities import SUPERUSER_ACCOUNT, CLIENT_ACCOUNT, STUDENT_ACCOUNT
+from utilities import validate_user_info, validate_login_data, STATUS_CODE, upload_image_aws, validate_profile_data
 
 app = Flask(__name__)
 
 CORS(app)
-app.config['SECRET_KEY'] = '4451ae0bc6ad1a0004f0d48f3ed7f36f41c1a438c1289715'
+app.config['SECRET_KEY'] = SECRET_KEY
+app.config['UPLOAD_FOLDER'] = AWS_UPLOAD_FOLDER
 
 jwt = JWTManager(app)
-app.config["JWT_SECRET_KEY"] = '8c01266947a861311f965636744d880bd588a2edd30aa3e7'
-app.config['JWT_TOKEN_LOCATION'] = ['cookies']
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=1)
+app.config["JWT_SECRET_KEY"] = JWT_SECRET_KEY
+app.config['JWT_TOKEN_LOCATION'] = JWT_TOKEN_LOCATION
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(days=JWT_ACCESS_TOKEN_EXPIRES_DAYS)
 
 
 @app.after_request
@@ -56,23 +58,43 @@ def logout():
     return response
 
 
-@app.route('/api/users', methods=['POST', 'GET'])
-def user_register():
-    if request.method == 'POST':
-        data = request.json
-        error_msg = validate_user_info(data)
-        if error_msg is None:
-            return UserController().create_user(data)
-        else:
-            return jsonify(error_msg), STATUS_CODE['bad_request']
+@app.route('/api/create_user', methods=['POST'])
+def create_user():
+    data = request.json
+    error_msg = validate_user_info(data)
+    if error_msg is None:
+        return UserController().create_user(data)
     else:
-        #Todo: Return a list with all users
-        return jsonify('Ok')
+        return jsonify(error_msg), STATUS_CODE['bad_request']
 
 
-@app.route('/index')
-def index():
-    return Controller().get_message()
+@app.route('/api/users', methods=['GET'])
+@jwt_required()
+def get_users():
+    if request.json is None or 'type' not in request.json:
+        return jsonify('The following parameter is required: type'), STATUS_CODE['bad_request']
+
+    if request.json['type'] not in [STUDENT_ACCOUNT, CLIENT_ACCOUNT, SUPERUSER_ACCOUNT]:
+        return jsonify('Valid type: %s, %s, and %s' % (STUDENT_ACCOUNT, CLIENT_ACCOUNT, SUPERUSER_ACCOUNT)), \
+               STATUS_CODE['bad_request']
+
+    data = request.json
+    return UserController().get_all_users(data)
+
+
+@app.route('/api/edit_user', methods=['PUT'])
+@jwt_required()
+def user_edit():
+    data = request.form.copy()
+    error_msg = validate_profile_data(data)
+    if error_msg is not None:
+        return jsonify(error_msg), STATUS_CODE['bad_request']
+
+    data.update({'image_key': None})
+    if 'image' in request.files and request.files['image'].content_type is not None:
+        image = request.files['image']
+        data['image_key'] = upload_image_aws(data['user_id'], image)
+    return UserController().edit_user(data)
 
 @app.route('/api/user_info', methods=['GET'])
 def user_info():
