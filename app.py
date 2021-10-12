@@ -86,7 +86,7 @@ def get_users():
 
 
 @app.route('/api/edit_user', methods=['PUT'])
-#@jwt_required()
+@jwt_required()
 def user_edit():
     data = request.form.copy()
     error_msg = validate_profile_data(data)
