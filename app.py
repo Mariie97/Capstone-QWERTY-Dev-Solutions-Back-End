@@ -5,15 +5,13 @@ from flask_cors import CORS
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, set_access_cookies, \
     unset_jwt_cookies, get_jwt
 
-from config.config import JWT_SECRET_KEY, JWT_TOKEN_LOCATION, JWT_ACCESS_TOKEN_EXPIRES_DAYS, AWS_BUCKET_NAME, \
-    AWS_UPLOAD_FOLDER, SECRET_KEY
+from config.config import JWT_SECRET_KEY, JWT_TOKEN_LOCATION, JWT_ACCESS_TOKEN_EXPIRES_DAYS, AWS_UPLOAD_FOLDER, \
+    SECRET_KEY
 from controllers.jobs_controller import JobController
 from controllers.users_controller import UserController
-from utilities import validate_user_info, validate_login_data, STATUS_CODE, SUPERUSER_ACCOUNT, CLIENT_ACCOUNT, \
-    STUDENT_ACCOUNT
-from utilities import validate_user_info, validate_login_data, STATUS_CODE, upload_image_aws, generate_profile_pic_url, \
-    validate_profile_data
-    STUDENT_ACCOUNT, validate_assign_job_data
+from utilities import SUPERUSER_ACCOUNT, CLIENT_ACCOUNT, validate_user_info, validate_login_data, STATUS_CODE, \
+    upload_image_aws, validate_profile_data, STUDENT_ACCOUNT, validate_assign_job_data, validate_password_info, \
+    validate_email
 
 app = Flask(__name__)
 
