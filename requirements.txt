@@ -1,3 +1,5 @@
+awscli==1.20.54
+boto3==1.18.54
 click==8.0.1
 colorama==0.4.4
 Flask==2.0.1
@@ -8,7 +10,7 @@ itsdangerous==2.0.1
 Jinja2==3.0.1
 MarkupSafe==2.0.1
 Pillow==8.3.2
-pkg_resources==0.0.0
+python-dotenv
 psycopg2-binary==2.9.1
 PyJWT==2.1.0
 reportlab==3.6.1
