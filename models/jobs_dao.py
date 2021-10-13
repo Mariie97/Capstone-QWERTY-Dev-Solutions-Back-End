@@ -7,25 +7,30 @@ from utilities import JOB_REQUESTS_STATE, JOB_STATE
 class JobDao(MainDao):
 
     def create_job(self, data):
-        cursor = self.conn.cursor()
+        try:
+            cursor = self.conn.cursor()
 
-        query = 'insert into address (street, city, zipcode)' \
-                'values (%s, %s, %s) returning address_id;'
-        cursor.execute(query, (data['street'], data['city'], data['zipcode']))
-        add_id = cursor.fetchone()
-        self.conn.commit()
+            query = 'insert into address (street, city, zipcode)' \
+                    'values (%s, %s, %s) returning address_id;'
+            cursor.execute(query, (data['street'], data['city'], data['zipcode']))
+            add_id = cursor.fetchone()
+            self.conn.commit()
 
-        query = 'insert into jobs (owner_id, title, description, price, categories, address_id) ' \
-                'values (%s, %s, %s, %s, %s, %s) returning job_id, owner_id, title, description, price, categories;'
-        cursor.execute(query, (data['user_id'], data['title'], data['description'], data['price'], data['categories'],
-                               add_id[0]))
-        job_info = cursor.fetchone()
-        job_id = job_info[0]
-        self.conn.commit()
+            query = 'insert into jobs (owner_id, title, description, price, categories, address_id) ' \
+                    'values (%s, %s, %s, %s, %s, %s) returning job_id, owner_id, title, description, price, categories;'
+            cursor.execute(query, (data['user_id'], data['title'], data['description'], data['price'],
+                                   data['categories'], add_id[0]))
+            job_info = cursor.fetchone()
+            job_id = job_info[0]
+            self.conn.commit()
 
-        self.set_job_days(job_id, data['d'], data['l'], data['m'], data['w'], data['j'], data['v'], data['s'])
+            self.set_job_days(job_id, data['d'], data['l'], data['m'], data['w'], data['j'], data['v'], data['s'])
 
-        return job_info
+            return job_info
+        except DatabaseError as error:
+            return None, error.pgerror
+        finally:
+            self.conn.close()
 
     def set_job_days(self, job_id, dom, lun, mar, wed, jue, vie, sab):
         cursor = self.conn.cursor()
