@@ -85,15 +85,19 @@ def get_users():
     return UserController().get_all_users(data)
 
 
-@app.route('/api/edit_user', methods=['PUT'])
+@app.route('/api/edit_user/<int:user_id>', methods=['PUT'])
 @jwt_required()
-def user_edit():
+def user_edit(user_id):
     data = request.form.copy()
     error_msg = validate_profile_data(data)
     if error_msg is not None:
         return jsonify(error_msg), STATUS_CODE['bad_request']
 
-    data.update({'image_key': None})
+    data.update({
+        'user_id': user_id,
+        'image_key': None
+    })
+
     if 'image' in request.files and request.files['image'].content_type is not None:
         image = request.files['image']
         data['image_key'] = upload_image_aws(data['user_id'], image)
