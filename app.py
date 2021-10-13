@@ -9,7 +9,7 @@ from config.config import JWT_SECRET_KEY, JWT_TOKEN_LOCATION, JWT_ACCESS_TOKEN_E
     AWS_UPLOAD_FOLDER, SECRET_KEY
 from controllers.users_controller import UserController
 from utilities import validate_user_info, validate_login_data, STATUS_CODE, SUPERUSER_ACCOUNT, CLIENT_ACCOUNT, \
-    STUDENT_ACCOUNT
+    STUDENT_ACCOUNT, validate_email, validate_password_info
 from utilities import validate_user_info, validate_login_data, STATUS_CODE, upload_image_aws, generate_profile_pic_url, \
     validate_profile_data
 
@@ -103,12 +103,15 @@ def user_edit():
 @app.route('/api/change_password', methods=['GET', 'PUT'])
 def change_password():
     if request.method == 'GET':
-        data = request.json
-        error_msg = validate_email(data['email'])
-        if error_msg is not None:
+        if 'email' not in request.args:
+            return jsonify("Email not specify"), STATUS_CODE['bad_request']
+
+        data = request.args
+        is_valid = validate_email(data['email'])
+        if is_valid is not None:
             return UserController().retrieve_questions(data)
         else:
-            return jsonify(error_msg), STATUS_CODE['bad_request']
+            return jsonify('Email provided is not valid'), STATUS_CODE['bad_request']
     else:
         data = request.json
         error_msg = validate_password_info(data)
