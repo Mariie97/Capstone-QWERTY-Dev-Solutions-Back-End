@@ -9,9 +9,9 @@ from config.config import JWT_SECRET_KEY, JWT_TOKEN_LOCATION, JWT_ACCESS_TOKEN_E
     SECRET_KEY
 from controllers.jobs_controller import JobController
 from controllers.users_controller import UserController
-from utilities import SUPERUSER_ACCOUNT, CLIENT_ACCOUNT, validate_user_info, validate_login_data, STATUS_CODE, \
-    upload_image_aws, validate_profile_data, STUDENT_ACCOUNT, validate_assign_job_data, validate_password_info, \
-    validate_email
+from utilities import SUPERUSER_ACCOUNT, CLIENT_ACCOUNT, STUDENT_ACCOUNT, validate_assign_job_data, \
+    validate_password_info, validate_email, validate_user_info, validate_login_data, STATUS_CODE, upload_image_aws, \
+    validate_profile_data
 
 app = Flask(__name__)
 
