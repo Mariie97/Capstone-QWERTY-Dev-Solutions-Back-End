@@ -66,10 +66,9 @@ class UserDao(MainDao):
             else:
                 if user_info[0] is not None and (data['street'] is None or data['city'] is None or data['zipcode']
                                                  is None):
-                    query = 'update users ' \
-                            'set address_id = %s ' \
-                            'where user_id = %s;'
-                    cursor.execute(query, (None, data['user_id']))
+                    query = 'delete from address ' \
+                            'where address_id = %s;'
+                    cursor.execute(query, (user_info[0], ))
                     self.conn.commit()
             return user_info
 
