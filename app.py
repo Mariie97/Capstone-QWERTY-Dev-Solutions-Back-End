@@ -125,5 +125,11 @@ def change_password():
             return jsonify(error_msg), STATUS_CODE['bad_request']
 
 
+@app.route('/api/is_valid_token', methods=['GET'])
+@jwt_required()
+def verify_is_auth():
+    return jsonify('User is authenticated!'), STATUS_CODE['ok']
+
+
 if __name__ == '__main__':
     app.run(debug=True)
