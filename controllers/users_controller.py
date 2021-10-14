@@ -119,5 +119,5 @@ class UserController:
                 return jsonify("User not found"), STATUS_CODE['not_found']
             else:
                 return jsonify(self.get_user_info_dict(user)), STATUS_CODE['ok']
-        except IntegrityError as e:
+        except Exception as e:
             return jsonify(e.pgerror), STATUS_CODE['bad_request']
