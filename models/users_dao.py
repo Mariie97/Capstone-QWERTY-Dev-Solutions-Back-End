@@ -76,9 +76,11 @@ class UserDao(MainDao):
         cursor = self.conn.cursor()
         query = 'select type, answer from questions where user_id in (select user_id from users where email = %s);'
         cursor.execute(query, (user_email['email'],))
-        questions = cursor.fetchall()
-        if questions is None:
+
+        if cursor.rowcount == 0:
             return None
+
+        questions = cursor.fetchall()
         question1, answer1 = questions[0]
         question2, answer2 = questions[1]
         security = [question1, question2, answer1, answer2]
