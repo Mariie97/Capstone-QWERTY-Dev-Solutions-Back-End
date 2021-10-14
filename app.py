@@ -11,6 +11,9 @@ from controllers.jobs_controller import JobController
 from controllers.users_controller import UserController
 from utilities import SUPERUSER_ACCOUNT, CLIENT_ACCOUNT, STUDENT_ACCOUNT, validate_assign_job_data, \
     validate_password_info, validate_email, validate_user_info, validate_login_data, STATUS_CODE, upload_image_aws, \
+from utilities import validate_user_info, validate_login_data, STATUS_CODE, SUPERUSER_ACCOUNT, CLIENT_ACCOUNT, \
+    STUDENT_ACCOUNT, validate_email, validate_password_info
+from utilities import validate_user_info, validate_login_data, STATUS_CODE, upload_image_aws, generate_profile_pic_url, \
     validate_profile_data
 
 app = Flask(__name__)
@@ -85,15 +88,19 @@ def get_users():
     return UserController().get_all_users(data)
 
 
-@app.route('/api/edit_user', methods=['PUT'])
+@app.route('/api/edit_user/<int:user_id>', methods=['PUT'])
 @jwt_required()
-def user_edit():
+def user_edit(user_id):
     data = request.form.copy()
     error_msg = validate_profile_data(data)
     if error_msg is not None:
         return jsonify(error_msg), STATUS_CODE['bad_request']
 
-    data.update({'image_key': None})
+    data.update({
+        'user_id': user_id,
+        'image_key': None
+    })
+
     if 'image' in request.files and request.files['image'].content_type is not None:
         image = request.files['image']
         data['image_key'] = upload_image_aws(data['user_id'], image)
@@ -103,12 +110,15 @@ def user_edit():
 @app.route('/api/change_password', methods=['GET', 'PUT'])
 def change_password():
     if request.method == 'GET':
-        data = request.json
-        error_msg = validate_email(data['email'])
-        if error_msg is not None:
+        if 'email' not in request.args:
+            return jsonify("Email not specify"), STATUS_CODE['bad_request']
+
+        data = request.args
+        is_valid = validate_email(data['email'])
+        if is_valid is not None:
             return UserController().retrieve_questions(data)
         else:
-            return jsonify(error_msg), STATUS_CODE['bad_request']
+            return jsonify('Email provided is not valid'), STATUS_CODE['bad_request']
     else:
         data = request.json
         error_msg = validate_password_info(data)
@@ -147,6 +157,12 @@ def assign_job_worker():
 
     data = request.json
     return JobController().set_job_worker(data)
+
+
+@app.route('/api/is_valid_token', methods=['GET'])
+@jwt_required()
+def verify_is_auth():
+    return jsonify('User is authenticated!'), STATUS_CODE['ok']
 
 
 if __name__ == '__main__':
