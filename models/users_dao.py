@@ -29,12 +29,20 @@ class UserDao(MainDao):
 
     def edit_user(self, data):
         cursor = self.conn.cursor()
-        query = 'update users ' \
-                'set first_name = %s, last_name = %s, image = %s, about = %s ' \
-                'where user_id = %s returning address_id;'
+        if data['image_key'] is not None:
+            query = 'update users ' \
+                    'set first_name = %s, last_name = %s, image = %s, about = %s ' \
+                    'where user_id = %s returning address_id;'
 
-        cursor.execute(query, (data['first_name'].capitalize(), data['last_name'].capitalize(), data['image_key'],
+            cursor.execute(query, (data['first_name'].capitalize(), data['last_name'].capitalize(), data['image_key'],
                                data['about'], data['user_id']))
+        else:
+            query = 'update users ' \
+                    'set first_name = %s, last_name = %s, about = %s ' \
+                    'where user_id = %s returning address_id;'
+
+            cursor.execute(query, (data['first_name'].capitalize(), data['last_name'].capitalize(), data['about'],
+                                   data['user_id']))
 
         user_info = cursor.fetchone()
         if user_info is None:
