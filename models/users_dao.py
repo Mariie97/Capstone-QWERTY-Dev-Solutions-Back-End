@@ -32,12 +32,20 @@ class UserDao(MainDao):
 
     def edit_user(self, data):
         cursor = self.conn.cursor()
-        query = 'update users ' \
-                'set first_name = %s, last_name = %s, image = %s, about = %s ' \
-                'where user_id = %s returning address_id;'
+        if data['image_key'] is not None:
+            query = 'update users ' \
+                    'set first_name = %s, last_name = %s, image = %s, about = %s ' \
+                    'where user_id = %s returning address_id;'
 
-        cursor.execute(query, (data['first_name'].capitalize(), data['last_name'].capitalize(), data['image_key'],
+            cursor.execute(query, (data['first_name'].capitalize(), data['last_name'].capitalize(), data['image_key'],
                                data['about'], data['user_id']))
+        else:
+            query = 'update users ' \
+                    'set first_name = %s, last_name = %s, about = %s ' \
+                    'where user_id = %s returning address_id;'
+
+            cursor.execute(query, (data['first_name'].capitalize(), data['last_name'].capitalize(), data['about'],
+                                   data['user_id']))
 
         user_info = cursor.fetchone()
         if user_info is None:
@@ -79,9 +87,11 @@ class UserDao(MainDao):
         cursor = self.conn.cursor()
         query = 'select type, answer from questions where user_id in (select user_id from users where email = %s);'
         cursor.execute(query, (user_email['email'],))
-        questions = cursor.fetchall()
-        if questions is None:
+
+        if cursor.rowcount == 0:
             return None
+
+        questions = cursor.fetchall()
         question1, answer1 = questions[0]
         question2, answer2 = questions[1]
         security = [question1, question2, answer1, answer2]

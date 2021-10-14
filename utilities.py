@@ -16,12 +16,26 @@ account_type = {
     'superuser': '3',
 }
 
+JOB_REQUESTS_STATE = {
+    'open': '1',
+    'closed': '2'
+}
+
+JOB_STATE = {
+    'posted': '1',
+    'in_process': '2',
+    'completed': '3',
+    'cancelled': '4',
+    'deleted': '5',
+}
+
 STATUS_CODE = {
     'ok': 200,
     'created': 201,
     'bad_request': 400,
     'unauthorized': 401,
     'not_found': 404,
+    'server_error': 500,
 }
 
 
@@ -33,8 +47,10 @@ def validate_password_info(req_json):
     for param in expected_params:
         if param not in req_json:
             return 'The following parameters are required: ' + concat_list_to_string(expected_params)
+
     if validate_email(req_json['email']) is None:
         return 'Email provided is not valid'
+
     return None
 
 
@@ -79,8 +95,20 @@ def validate_login_data(data):
     return None
 
 
+def validate_assign_job_data(data):
+    expected_params = ['job_id', 'student_id']
+    if data is None:
+        return 'The following parameters are required: ' + concat_list_to_string(expected_params)
+
+    for param in expected_params:
+        if param not in data:
+            return 'The following parameters are required: ' + concat_list_to_string(expected_params)
+
+    return None
+
+
 def validate_profile_data(data):
-    expected_params = ['first_name', 'last_name', 'user_id', 'about', 'street', 'city', 'zipcode']
+    expected_params = ['first_name', 'last_name', 'about', 'street', 'city', 'zipcode']
 
     if data.__len__() == 0:
         return "The following parameters are required: {expected}.".format(
