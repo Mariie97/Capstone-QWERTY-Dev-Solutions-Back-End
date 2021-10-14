@@ -162,5 +162,11 @@ def verify_is_auth():
     return jsonify('User is authenticated!'), STATUS_CODE['ok']
 
 
+@app.route('/api/user_info/<int:user_id>', methods=['GET'])
+def user_info(user_id):
+    data = {'user_id': user_id}
+    return UserController().get_user_info(data)
+
+
 if __name__ == '__main__':
     app.run(debug=True)

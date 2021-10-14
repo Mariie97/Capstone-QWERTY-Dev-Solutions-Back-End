@@ -1,4 +1,7 @@
+import decimal
+from psycopg2 import DatabaseError
 from models.main_dao import MainDao
+from utilities import generate_profile_pic_url
 
 
 class UserDao(MainDao):
@@ -105,3 +108,55 @@ class UserDao(MainDao):
         self.conn.commit()
 
         return info
+
+    def get_user_info(self, user):
+        try:
+            cursor = self.conn.cursor()
+
+            query = 'select address_id from users where user_id = %s;'
+            query2 = 'select AVG(value) from rates where user_id = %s;'
+            query3 = 'select image from users where user_id = %s;'
+
+            cursor.execute(query, (user['user_id'],))
+            address_info = cursor.fetchone()
+
+            if address_info is None:
+                return None
+
+            cursor.execute(query2, (user['user_id'],))
+            rate_average = cursor.fetchone()
+
+            if rate_average[0] is None:
+                new_number = str(decimal.Decimal(0.0))
+            else:
+                new_number = str(decimal.Decimal(rate_average[0]))
+
+            cursor.execute(query3, (user['user_id'],))
+            image_info = cursor.fetchone()
+
+            if image_info is not None:
+                new_image = generate_profile_pic_url(image_info[0])
+            else:
+                new_image = image_info[0]
+
+            if address_info[0] is None:
+                query1 = 'select * from users where user_id = %s;'
+                cursor.execute(query1, (user['user_id'],))
+                address_user = cursor.fetchone()
+                user_info = [None, address_user[0], address_user[1], address_user[2], address_user[3],
+                             address_user[4], new_image, address_user[6], address_user[7], address_user[8],
+                             None, None, None, new_number]
+
+            else:
+                query1 = 'select * from users natural inner join address where user_id = %s;'
+                cursor.execute(query1, (user['user_id'],))
+                query_info = cursor.fetchone()
+                user_info = [query_info[0], query_info[1], query_info[2], query_info[3], query_info[4], query_info[5],
+                             new_image, query_info[7], query_info[8], query_info[9], query_info[10], query_info[11],
+                             query_info[12], new_number]
+
+            return user_info
+        except (Exception, DatabaseError) as error:
+            return None, error.pgerror
+        finally:
+            self.conn.close()

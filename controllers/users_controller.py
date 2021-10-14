@@ -45,6 +45,24 @@ class UserController:
         else:
             return jsonify("Invalid credentials"), STATUS_CODE['unauthorized']
 
+    def get_user_info_dict(self, data):
+        return {
+            'address_id': data[0],
+            'user_id': data[1],
+            'first_name': data[2],
+            'last_name': data[3],
+            'password': data[4],
+            'email': data[5],
+            'image': data[6],
+            'type': data[7],
+            'about': data[8],
+            'cancellations': data[9],
+            'street': data[10],
+            'city': data[11],
+            'zipcode': data[12],
+            'rate': data[13]
+        }
+
     def get_all_users(self, data):
         users = self.dao.get_all_users(data)
         result_list = []
@@ -92,4 +110,14 @@ class UserController:
             else:
                 return jsonify({'email': user[0], 'password': user[1]}), STATUS_CODE['ok']
         except IntegrityError as e:
+            return jsonify(e.pgerror), STATUS_CODE['bad_request']
+
+    def get_user_info(self, userid):
+        try:
+            user = self.dao.get_user_info(userid)
+            if user is None:
+                return jsonify("User not found"), STATUS_CODE['not_found']
+            else:
+                return jsonify(self.get_user_info_dict(user)), STATUS_CODE['ok']
+        except Exception as e:
             return jsonify(e.pgerror), STATUS_CODE['bad_request']
