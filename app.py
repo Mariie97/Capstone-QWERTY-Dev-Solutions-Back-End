@@ -118,9 +118,9 @@ def change_password():
             return jsonify(error_msg), STATUS_CODE['bad_request']
 
 
-@app.route('/api/user_info', methods=['GET'])
-def user_info():
-    data = request.json
+@app.route('/api/user_info/<int:user_id>', methods=['GET'])
+def user_info(user_id):
+    data = {'user_id': user_id}
     return UserController().get_user_info(data)
 
 
