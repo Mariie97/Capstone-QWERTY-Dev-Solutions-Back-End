@@ -9,9 +9,6 @@ from config.config import JWT_SECRET_KEY, JWT_TOKEN_LOCATION, JWT_ACCESS_TOKEN_E
     SECRET_KEY
 from controllers.jobs_controller import JobController
 from controllers.users_controller import UserController
-from utilities import validate_user_info, validate_login_data, STATUS_CODE, SUPERUSER_ACCOUNT, CLIENT_ACCOUNT, \
-    STUDENT_ACCOUNT, validate_password_info, validate_email
-from utilities import validate_user_info, validate_login_data, STATUS_CODE, upload_image_aws, generate_profile_pic_url, \
 from utilities import SUPERUSER_ACCOUNT, CLIENT_ACCOUNT, STUDENT_ACCOUNT, validate_email, validate_password_info, \
     validate_assign_job_data, validate_user_info, validate_login_data, STATUS_CODE, upload_image_aws, \
     validate_profile_data
