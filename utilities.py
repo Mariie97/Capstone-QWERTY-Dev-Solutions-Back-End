@@ -21,7 +21,7 @@ JOB_REQUESTS_STATE = {
     'closed': '2'
 }
 
-JOB_STATE = {
+JOB_STATUS = {
     'posted': '1',
     'in_process': '2',
     'completed': '3',
@@ -156,3 +156,14 @@ def upload_image_aws(user_id, image_file):
         return file_name
     except Exception as e:
         return None
+
+
+def validate_job_status(data):
+    if data is None or 'status' not in data:
+        return 'The following parameter is required: status'
+
+    if data['status'] not in JOB_STATUS.values():
+        return 'Valid status: ' + concat_list_to_string(JOB_STATUS.values())
+
+    return None
+

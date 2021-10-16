@@ -1,7 +1,8 @@
 from psycopg2 import DatabaseError
 
+from decorators import exception_handler
 from models.main_dao import MainDao
-from utilities import JOB_REQUESTS_STATE, JOB_STATE
+from utilities import JOB_REQUESTS_STATE, JOB_STATUS
 
 
 class JobDao(MainDao):
@@ -37,7 +38,7 @@ class JobDao(MainDao):
         try:
             cursor = self.conn.cursor()
             query = 'update jobs set student_id = %s, status = %s  where job_id=%s;'
-            cursor.execute(query, (data['student_id'], JOB_STATE['in_process'], data['job_id']))
+            cursor.execute(query, (data['student_id'], JOB_STATUS['in_process'], data['job_id']))
             if cursor.rowcount == 0:
                 return False, None
 
@@ -54,3 +55,18 @@ class JobDao(MainDao):
         finally:
             self.conn.close()
 
+    @exception_handler
+    def set_job_status(self, data):
+        cursor = self.conn.cursor()
+        query = 'update jobs set status = %s where job_id=%s  returning student_id;'
+        cursor.execute(query, (data['status'], data['job_id']))
+        if cursor.rowcount == 0:
+            return None, None
+
+        student_id = cursor.fetchone()[0]
+        if data['status'] == JOB_STATUS['posted'] and student_id is not None:
+            query = 'update jobs set student_id = null where job_id=%s;'
+            cursor.execute(query, (data['job_id'], ))
+
+        self.conn.commit()
+        return True, None
