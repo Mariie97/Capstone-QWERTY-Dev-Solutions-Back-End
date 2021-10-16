@@ -158,6 +158,6 @@ def upload_image_aws(user_id, image_file):
         return None
 
 
-def convert_date_to_string(date):
+def format_date(date):
     return date.strftime('%B %d, %Y')
 

@@ -1,7 +1,7 @@
 from flask import jsonify
 
 from models.jobs_dao import JobDao
-from utilities import STATUS_CODE, convert_date_to_string
+from utilities import STATUS_CODE, format_date
 
 
 class JobController:
@@ -69,7 +69,7 @@ class JobController:
                 'title': row[1],
                 'price': row[2],
                 'categories': row[3],
-                'date_posted': convert_date_to_string(row[4]),
+                'date_posted': format_date(row[4]),
             }
             results.append(job)
 
