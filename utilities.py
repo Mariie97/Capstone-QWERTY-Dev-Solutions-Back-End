@@ -156,3 +156,8 @@ def upload_image_aws(user_id, image_file):
         return file_name
     except Exception as e:
         return None
+
+
+def convert_date_to_string(date):
+    return date.strftime('%B %d, %Y')
+
