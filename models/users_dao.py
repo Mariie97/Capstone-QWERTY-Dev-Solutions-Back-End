@@ -117,9 +117,9 @@ class UserDao(MainDao):
         try:
             cursor = self.conn.cursor()
 
-            query = 'select address_id from users where user_id = %s;'
+            query = 'select address_id from users where user_id = %s and deleted=false;'
             query2 = 'select AVG(value) from rates where user_id = %s;'
-            query3 = 'select image from users where user_id = %s;'
+            query3 = 'select image from users where user_id = %s and deleted=false;'
 
             cursor.execute(query, (user['user_id'],))
             address_info = cursor.fetchone()
