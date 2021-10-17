@@ -163,6 +163,7 @@ def verify_is_auth():
 
 
 @app.route('/api/user_info/<int:user_id>', methods=['GET'])
+@jwt_required()
 def user_info(user_id):
     data = {'user_id': user_id}
     return UserController().get_user_info(data)
@@ -173,6 +174,13 @@ def user_info(user_id):
 def job_info(job_id):
     data = {'job_id': job_id}
     return JobController().get_job_details(data)
+
+
+@app.route('/api/jobs_list/<int:status>', methods=['GET'])
+@jwt_required()
+def jobs_list(status):
+    data = {'status': status}
+    return JobController().get_job_list_by_status(data)
 
 
 if __name__ == '__main__':
