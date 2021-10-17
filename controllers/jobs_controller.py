@@ -1,7 +1,7 @@
 from flask import jsonify
 
 from models.jobs_dao import JobDao
-from utilities import STATUS_CODE, format_date
+from utilities import STATUS_CODE, format_date, generate_profile_pic_url
 
 
 class JobController:
@@ -61,7 +61,7 @@ class JobController:
         if details is None:
             return jsonify("Job with id={job_id} not found".format(job_id=data['job_id'])), STATUS_CODE['not_found']
 
-        data_dict = {
+        details_dict = {
             'owner_id': details[0][0],
             'student_id': details[0][1],
             'title': details[0][2],
@@ -69,15 +69,20 @@ class JobController:
             'price': details[0][4],
             'categories': details[0][5],
             'status': details[0][6],
-            'date_posted': details[0][7],
+            'date_posted': format_date(details[0][7]),
             'pdf': details[0][8],
             'street': details[0][9],
             'city': details[0][10],
             'zipcode': details[0][11],
+            'owner_name': details[0][12],
+            'owner_last': details[0][13],
+            'owner_image': details[0][14] if details[0][14] is None else generate_profile_pic_url(details[0][14]),
+            'student_name': details[0][15] if details[0][1] is not None else None,
+            'student_last': details[0][16] if details[0][1] is not None else None,
             'days': details[1],
         }
 
-        return jsonify(data_dict), STATUS_CODE['ok']
+        return jsonify(details_dict), STATUS_CODE['ok']
 
     def get_job_list_by_status(self, data):
         jobs_list, error_msg = self.dao.get_job_list_by_status(data)

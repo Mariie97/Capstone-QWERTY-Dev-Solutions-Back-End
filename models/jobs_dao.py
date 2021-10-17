@@ -59,13 +59,22 @@ class JobDao(MainDao):
     def get_job_details(self, data):
         cursor = self.conn.cursor()
         query = 'select owner_id, student_id, title, description, price, categories, status, date_posted, pdf, ' \
-                'street, city, zipcode ' \
-                'from jobs natural inner join address ' \
+                'street, city, zipcode, O.first_name, O.last_name, O.image ' \
+                'from jobs as J ' \
+                'inner join users as O on J.owner_id=O.user_id ' \
+                'inner join address as A on A.address_id=O.address_id ' \
                 'where job_id=%s;'
         cursor.execute(query, (data['job_id'], ))
         details = cursor.fetchone()
         if details is None:
             return None, None
+
+        if details[1] is not None:
+            query = 'select first_name, last_name ' \
+                    'from users ' \
+                    'where user_id=%s;'
+            cursor.execute(query, (details[1], ))
+            details = details + cursor.fetchone()
 
         query = 'select weekday ' \
                 'from days ' \
