@@ -1,5 +1,6 @@
 from psycopg2 import DatabaseError
 
+from decorators import exception_handler
 from models.main_dao import MainDao
 from utilities import JOB_REQUESTS_STATE, JOB_STATE
 
@@ -54,3 +55,23 @@ class JobDao(MainDao):
         finally:
             self.conn.close()
 
+    @exception_handler
+    def get_job_details(self, data):
+        cursor = self.conn.cursor()
+        query = 'select owner_id, student_id, title, description, price, categories, status, date_posted, pdf, ' \
+                'street, city, zipcode ' \
+                'from jobs natural inner join address ' \
+                'where job_id=%s;'
+        cursor.execute(query, (data['job_id'], ))
+        details = cursor.fetchone()
+        if details is None:
+            return None, None
+
+        query = 'select weekday ' \
+                'from days ' \
+                'where job_id=%s;'
+        cursor.execute(query, (data['job_id'], ))
+        days = [row[0] for row in cursor.fetchall()]
+        details = (details, days)
+
+        return details, None
