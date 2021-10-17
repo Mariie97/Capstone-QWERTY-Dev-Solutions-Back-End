@@ -11,7 +11,7 @@ from controllers.jobs_controller import JobController
 from controllers.users_controller import UserController
 from utilities import SUPERUSER_ACCOUNT, CLIENT_ACCOUNT, STUDENT_ACCOUNT, validate_email, validate_password_info, \
     validate_assign_job_data, validate_user_info, validate_login_data, STATUS_CODE, upload_image_aws, \
-    validate_profile_data, validate_job_status
+    validate_profile_data, validate_job_status, validate_job_rate
 
 app = Flask(__name__)
 
@@ -180,6 +180,21 @@ def change_job_status(job_id):
         'job_id': job_id
     })
     return JobController().set_job_status(data)
+
+
+@app.route('/api/rate_job/<int:job_id>', methods=['POST'])
+@jwt_required()
+def rate_job(job_id):
+    error_msg = validate_job_rate(request.json)
+    if error_msg is not None:
+        return jsonify(error_msg), STATUS_CODE['bad_request']
+
+    data = request.json
+    data.update({
+        'job_id': job_id
+    })
+
+    return JobController().add_job_ratings(data)
 
 
 if __name__ == '__main__':

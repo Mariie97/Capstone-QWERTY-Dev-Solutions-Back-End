@@ -167,3 +167,18 @@ def validate_job_status(data):
 
     return None
 
+
+def validate_job_rate(data):
+    expected_params = ['user_id', 'value']
+    if data is None:
+        return 'The following parameters are required: ' + concat_list_to_string(expected_params)
+
+    for param in expected_params:
+        if param not in data:
+            return 'The following parameters are required: ' + concat_list_to_string(expected_params)
+
+    value_number = int(data['value'])
+    if value_number < 1 or value_number > 5:
+        return 'Rate value must be in the range of 1 to 5.'
+
+    return None

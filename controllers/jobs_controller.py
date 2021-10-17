@@ -62,3 +62,13 @@ class JobController:
             return jsonify('Job with id={id} not found.'.format(id=data['job_id'])), STATUS_CODE['not_found']
 
         return jsonify("Job {job_id} updated successfully!".format(job_id=data['job_id'])), STATUS_CODE['ok']
+
+    def add_job_ratings(self, data):
+        rated, error_msg = self.dao.add_job_ratings(data)
+        if error_msg is not None:
+            return jsonify(error_msg), STATUS_CODE['bad_request']
+
+        if rated is None:
+            return jsonify('Could not add rates at this moment.'.format(id=data['job_id'])), STATUS_CODE['server_error']
+
+        return jsonify('Rating added successfully!'), STATUS_CODE['created']

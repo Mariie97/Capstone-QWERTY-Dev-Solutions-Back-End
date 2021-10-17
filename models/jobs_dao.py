@@ -70,3 +70,26 @@ class JobDao(MainDao):
 
         self.conn.commit()
         return True, None
+
+    @exception_handler
+    def add_job_ratings(self, data):
+        cursor = self.conn.cursor()
+        query = 'insert into rates (job_id, user_id, value) values (%s, %s, %s);'
+        cursor.execute(query, (data['job_id'], data['user_id'], data['value']))
+
+        query = 'select count(*) ' \
+                'from rates ' \
+                'where job_id=%s;'
+        cursor.execute(query, (data['job_id'], ))
+        total_rates = cursor.fetchone()
+        if total_rates is not None and int(total_rates[0]) == 2:
+            job_status = {
+                'job_id': data['job_id'],
+                'status': JOB_STATUS['completed']
+            }
+            job_updated, error_msg = self.set_job_status(job_status)
+            if error_msg is not None:
+                return None, error_msg
+        else:
+            self.conn.commit()
+        return True, None
