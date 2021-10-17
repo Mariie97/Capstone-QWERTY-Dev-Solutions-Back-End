@@ -68,9 +68,10 @@ class UserController:
         result_list = []
         for row in users:
             obj = {
-                'first_name': row[0],
-                'last_name': row[1],
-                'email': row[2],
+                'user_id': row[0],
+                'first_name': row[1],
+                'last_name': row[2],
+                'email': row[3],
             }
             result_list.append(obj)
         return jsonify(result_list), STATUS_CODE['ok']
@@ -121,3 +122,14 @@ class UserController:
                 return jsonify(self.get_user_info_dict(user)), STATUS_CODE['ok']
         except Exception as e:
             return jsonify(e.pgerror), STATUS_CODE['bad_request']
+
+    def delete_user(self, data):
+        deleted, error_msg = self.dao.delete_user(data)
+        if error_msg is not None:
+            return jsonify(error_msg), STATUS_CODE['bad_request']
+
+        if not deleted:
+            return jsonify("User with id={id} not found".format(id=data['user_id']))
+
+        return jsonify("User deleted successfully!"), STATUS_CODE['ok']
+

@@ -1,10 +1,13 @@
 import decimal
 from psycopg2 import DatabaseError
+
+from decorators import exception_handler
 from models.main_dao import MainDao
 from utilities import generate_profile_pic_url
 
 
 class UserDao(MainDao):
+
     def create_user(self, data):
         cursor = self.conn.cursor()
         query = 'insert into users (first_name, last_name, password, email, type) values (%s, %s, ' \
@@ -25,7 +28,7 @@ class UserDao(MainDao):
         cursor = self.conn.cursor()
         query = 'select user_id, type ' \
                 'from users ' \
-                'where email=%s and password=crypt(%s, password);'
+                'where email=%s and password=crypt(%s, password) and deleted=false;'
         cursor.execute(query, (credentials['email'], credentials['password']))
         result = cursor.fetchone()
         return result
@@ -35,14 +38,14 @@ class UserDao(MainDao):
         if data['image_key'] is not None:
             query = 'update users ' \
                     'set first_name = %s, last_name = %s, image = %s, about = %s ' \
-                    'where user_id = %s returning address_id;'
+                    'where user_id=%s and deleted=false returning address_id;'
 
             cursor.execute(query, (data['first_name'].capitalize(), data['last_name'].capitalize(), data['image_key'],
-                               data['about'], data['user_id']))
+                                   data['about'], data['user_id']))
         else:
             query = 'update users ' \
                     'set first_name = %s, last_name = %s, about = %s ' \
-                    'where user_id = %s returning address_id;'
+                    'where user_id=%s and deleted=false returning address_id;'
 
             cursor.execute(query, (data['first_name'].capitalize(), data['last_name'].capitalize(), data['about'],
                                    data['user_id']))
@@ -74,18 +77,18 @@ class UserDao(MainDao):
 
     def get_all_users(self, data):
         cursor = self.conn.cursor()
-        query = 'select first_name, last_name, email ' \
+        query = 'select user_id, first_name, last_name, email ' \
                 'from users ' \
-                'where type=%s;'
+                'where type=%s and deleted=false ' \
+                'order by first_name;'
         cursor.execute(query, (data['type'], ))
-        results = []
-        for row in cursor:
-            results.append(row)
+        results = self.convert_to_list(cursor)
         return results
 
     def retrieve_questions(self, user_email):
         cursor = self.conn.cursor()
-        query = 'select type, answer from questions where user_id in (select user_id from users where email = %s);'
+        query = 'select type, answer ' \
+                'from questions where user_id in (select user_id from users where email=%s and deleted=false);'
         cursor.execute(query, (user_email['email'],))
 
         if cursor.rowcount == 0:
@@ -100,7 +103,8 @@ class UserDao(MainDao):
 
     def change_password(self, user_email):
         cursor = self.conn.cursor()
-        query = 'update users set password = crypt(%s, gen_salt(\'bf\')) where email = %s returning email, password;'
+        query = 'update users set password = crypt(%s, gen_salt(\'bf\')) where email=%s and deleted=false ' \
+                'returning email, password;'
         cursor.execute(query, (user_email['password'], user_email['email']))
         info = cursor.fetchone()
         if info is None:
@@ -160,3 +164,14 @@ class UserDao(MainDao):
             return None, error.pgerror
         finally:
             self.conn.close()
+
+    @exception_handler
+    def delete_user(self, data):
+        cursor = self.conn.cursor()
+        query = 'update users set deleted=true where user_id=%s;'
+        cursor.execute(query, (data['user_id'], ))
+        if cursor.rowcount == 0:
+            return False, None
+
+        self.conn.commit()
+        return True, None
