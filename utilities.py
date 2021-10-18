@@ -21,6 +21,16 @@ JOB_REQUESTS_STATE = {
     'closed': '2'
 }
 
+WEEK_DAYS = {
+    'domingo': '1',
+    'lunes': '2',
+    'martes': '3',
+    'miercoles': '4',
+    'jueves': '5',
+    'viernes': '6',
+    'sabado': '7',
+}
+
 JOB_STATE = {
     'posted': '1',
     'in_process': '2',
@@ -97,6 +107,19 @@ def validate_login_data(data):
 
 def validate_assign_job_data(data):
     expected_params = ['job_id', 'student_id']
+    if data is None:
+        return 'The following parameters are required: ' + concat_list_to_string(expected_params)
+
+    for param in expected_params:
+        if param not in data:
+            return 'The following parameters are required: ' + concat_list_to_string(expected_params)
+
+    return None
+
+
+def validate_create_job(data):
+    expected_params = ['user_id', 'title', 'description', 'price', 'categories', 'street', 'city',
+                       'zipcode', 'd', 'l', 'm', 'w', 'j', 'v', 's']
     if data is None:
         return 'The following parameters are required: ' + concat_list_to_string(expected_params)
 
