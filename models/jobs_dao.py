@@ -2,7 +2,7 @@ from psycopg2 import DatabaseError
 
 from decorators import exception_handler
 from models.main_dao import MainDao
-from utilities import JOB_REQUESTS_STATE, JOB_STATE, WEEK_DAYS
+from utilities import JOB_REQUESTS_STATE, WEEK_DAYS, JOB_STATUS
 
 
 class JobDao(MainDao):
@@ -77,7 +77,7 @@ class JobDao(MainDao):
         try:
             cursor = self.conn.cursor()
             query = 'update jobs set student_id = %s, status = %s  where job_id=%s;'
-            cursor.execute(query, (data['student_id'], JOB_STATE['in_process'], data['job_id']))
+            cursor.execute(query, (data['student_id'], JOB_STATUS['in_process'], data['job_id']))
             if cursor.rowcount == 0:
                 return False, None
 
@@ -137,3 +137,42 @@ class JobDao(MainDao):
             return None, None
         else:
             return requests_list, None
+
+    @exception_handler
+    def set_job_status(self, data):
+        cursor = self.conn.cursor()
+        query = 'update jobs set status = %s where job_id=%s  returning student_id;'
+        cursor.execute(query, (data['status'], data['job_id']))
+        if cursor.rowcount == 0:
+            return None, None
+
+        student_id = cursor.fetchone()[0]
+        if data['status'] == JOB_STATUS['posted'] and student_id is not None:
+            query = 'update jobs set student_id = null where job_id=%s;'
+            cursor.execute(query, (data['job_id'], ))
+
+        self.conn.commit()
+        return True, None
+
+    @exception_handler
+    def add_job_ratings(self, data):
+        cursor = self.conn.cursor()
+        query = 'insert into rates (job_id, user_id, value) values (%s, %s, %s);'
+        cursor.execute(query, (data['job_id'], data['user_id'], data['value']))
+
+        query = 'select count(*) ' \
+                'from rates ' \
+                'where job_id=%s;'
+        cursor.execute(query, (data['job_id'], ))
+        total_rates = cursor.fetchone()
+        if total_rates is not None and int(total_rates[0]) == 2:
+            job_status = {
+                'job_id': data['job_id'],
+                'status': JOB_STATUS['completed']
+            }
+            job_updated, error_msg = self.set_job_status(job_status)
+            if error_msg is not None:
+                return None, error_msg
+        else:
+            self.conn.commit()
+        return True, None

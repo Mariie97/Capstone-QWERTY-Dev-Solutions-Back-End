@@ -31,7 +31,7 @@ WEEK_DAYS = {
     'sabado': '7',
 }
 
-JOB_STATE = {
+JOB_STATUS = {
     'posted': '1',
     'in_process': '2',
     'completed': '3',
@@ -184,3 +184,28 @@ def upload_image_aws(user_id, image_file):
 def format_date(date):
     return date.strftime('%B %d, %Y')
 
+
+def validate_job_status(data):
+    if data is None or 'status' not in data:
+        return 'The following parameter is required: status'
+
+    if data['status'] not in JOB_STATUS.values():
+        return 'Valid status: ' + concat_list_to_string(JOB_STATUS.values())
+
+    return None
+
+
+def validate_job_rate(data):
+    expected_params = ['user_id', 'value']
+    if data is None:
+        return 'The following parameters are required: ' + concat_list_to_string(expected_params)
+
+    for param in expected_params:
+        if param not in data:
+            return 'The following parameters are required: ' + concat_list_to_string(expected_params)
+
+    value_number = int(data['value'])
+    if value_number < 1 or value_number > 5:
+        return 'Rate value must be in the range of 1 to 5.'
+
+    return None

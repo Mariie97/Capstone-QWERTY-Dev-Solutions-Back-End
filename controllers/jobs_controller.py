@@ -1,5 +1,4 @@
 from flask import jsonify
-from psycopg2 import IntegrityError
 
 from models.jobs_dao import JobDao
 from utilities import STATUS_CODE, format_date, generate_profile_pic_url
@@ -123,3 +122,23 @@ class JobController:
             results.append(job)
 
         return jsonify(results), STATUS_CODE['ok']
+
+    def set_job_status(self, data):
+        is_updated, error_msg = self.dao.set_job_status(data)
+        if error_msg is not None:
+            return jsonify(error_msg), STATUS_CODE['bad_request']
+
+        if not is_updated:
+            return jsonify('Job with id={id} not found.'.format(id=data['job_id'])), STATUS_CODE['not_found']
+
+        return jsonify("Job {job_id} updated successfully!".format(job_id=data['job_id'])), STATUS_CODE['ok']
+
+    def add_job_ratings(self, data):
+        rated, error_msg = self.dao.add_job_ratings(data)
+        if error_msg is not None:
+            return jsonify(error_msg), STATUS_CODE['bad_request']
+
+        if rated is None:
+            return jsonify('Could not add rates at this moment.'.format(id=data['job_id'])), STATUS_CODE['server_error']
+
+        return jsonify('Rating added successfully!'), STATUS_CODE['created']
