@@ -1,10 +1,50 @@
 from psycopg2 import DatabaseError
 
+from decorators import exception_handler
 from models.main_dao import MainDao
-from utilities import JOB_REQUESTS_STATE, JOB_STATE
+from utilities import JOB_REQUESTS_STATE, JOB_STATE, WEEK_DAYS
 
 
 class JobDao(MainDao):
+
+    @exception_handler
+    def create_job(self, data):
+        cursor = self.conn.cursor()
+
+        query = 'insert into address (street, city, zipcode)' \
+                'values (%s, %s, %s) returning address_id;'
+        cursor.execute(query, (data['street'], data['city'], data['zipcode']))
+        add_id = cursor.fetchone()
+
+        query = 'insert into jobs (owner_id, title, description, price, categories, address_id) ' \
+                'values (%s, %s, %s, %s, %s, %s) returning job_id, owner_id, title, description, price, categories;'
+        cursor.execute(query, (data['user_id'], data['title'], data['description'], data['price'],
+                               data['categories'], add_id[0]))
+        job_info = cursor.fetchone()
+        job_id = job_info[0]
+
+        self.set_job_days(job_id, data['d'], data['l'], data['m'], data['w'], data['j'], data['v'], data['s'])
+        self.conn.commit()
+        return job_info, None
+
+    def set_job_days(self, job_id, dom, lun, mar, wed, jue, vie, sab):
+        cursor = self.conn.cursor()
+        query = 'insert into days (job_id, weekday) ' \
+                'values (%s, %s);'
+        if dom == '1':
+            cursor.execute(query, (job_id, WEEK_DAYS['domingo']))
+        if lun == '1':
+            cursor.execute(query, (job_id, WEEK_DAYS['lunes']))
+        if mar == '1':
+            cursor.execute(query, (job_id, WEEK_DAYS['martes']))
+        if wed == '1':
+            cursor.execute(query, (job_id, WEEK_DAYS['miercoles']))
+        if jue == '1':
+            cursor.execute(query, (job_id, WEEK_DAYS['jueves']))
+        if vie == '1':
+            cursor.execute(query, (job_id, WEEK_DAYS['viernes']))
+        if sab == '1':
+            cursor.execute(query, (job_id, WEEK_DAYS['sabado']))
 
     def get_requests_list(self, data):
         cursor = self.conn.cursor()

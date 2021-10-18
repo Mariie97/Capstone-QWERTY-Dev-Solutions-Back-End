@@ -1,4 +1,5 @@
 from flask import jsonify
+from psycopg2 import IntegrityError
 
 from models.jobs_dao import JobDao
 from utilities import STATUS_CODE, format_date
@@ -8,6 +9,23 @@ class JobController:
 
     def __init__(self):
         self.dao = JobDao()
+
+    def job_creation_dict(self, data):
+        return{
+            'job_id': data[0],
+            'owner_id': data[1],
+            'title': data[2],
+            'description': data[3],
+            'price': data[4],
+            'category': data[5]
+        }
+
+    def create_job(self, data):
+        job, error_msg = self.dao.create_job(data)
+        if error_msg is not None:
+            return jsonify(error_msg), STATUS_CODE['bad_request']
+
+        return jsonify(self.job_creation_dict(job)), STATUS_CODE['created']
 
     def get_requests_list(self, data):
         requests = self.dao.get_requests_list(data)
