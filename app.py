@@ -172,6 +172,13 @@ def user_info(user_id):
     return UserController().get_user_info(data)
 
 
+@app.route('/api/job_details/<int:job_id>', methods=['GET'])
+@jwt_required()
+def job_info(job_id):
+    data = {'job_id': job_id}
+    return JobController().get_job_details(data)
+
+
 @app.route('/api/jobs_list/<int:status>', methods=['GET'])
 @jwt_required()
 def jobs_list(status):
