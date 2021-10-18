@@ -9,6 +9,9 @@ from config.config import JWT_SECRET_KEY, JWT_TOKEN_LOCATION, JWT_ACCESS_TOKEN_E
     AWS_UPLOAD_FOLDER, SECRET_KEY
 from controllers.jobs_controller import JobController
 from controllers.users_controller import UserController
+from utilities import SUPERUSER_ACCOUNT, CLIENT_ACCOUNT, STUDENT_ACCOUNT, validate_email, validate_password_info, \
+    validate_assign_job_data, validate_user_info, validate_login_data, STATUS_CODE, upload_image_aws, \
+    validate_profile_data
 from utilities import validate_user_info, validate_login_data, STATUS_CODE, SUPERUSER_ACCOUNT, CLIENT_ACCOUNT, \
     STUDENT_ACCOUNT, validate_password_info, validate_email, upload_image_aws, generate_profile_pic_url, \
     validate_profile_data, validate_assign_job_data, validate_create_job
@@ -125,12 +128,6 @@ def change_password():
             return jsonify(error_msg), STATUS_CODE['bad_request']
 
 
-@app.route('/api/user_info/<int:user_id>', methods=['GET'])
-def user_info(user_id):
-    data = {'user_id': user_id}
-    return UserController().get_user_info(data)
-
-
 @app.route('/api/job_requests', methods=['GET'])
 @jwt_required()
 def job_requests_list():
@@ -166,6 +163,20 @@ def assign_job_worker():
 @jwt_required()
 def verify_is_auth():
     return jsonify('User is authenticated!'), STATUS_CODE['ok']
+
+
+@app.route('/api/user_info/<int:user_id>', methods=['GET'])
+@jwt_required()
+def user_info(user_id):
+    data = {'user_id': user_id}
+    return UserController().get_user_info(data)
+
+
+@app.route('/api/jobs_list/<int:status>', methods=['GET'])
+@jwt_required()
+def jobs_list(status):
+    data = {'status': status}
+    return JobController().get_job_list_by_status(data)
 
 
 @app.route('/api/create_job', methods=['POST'])

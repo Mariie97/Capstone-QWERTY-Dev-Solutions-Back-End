@@ -2,7 +2,7 @@ from flask import jsonify
 from psycopg2 import IntegrityError
 
 from models.jobs_dao import JobDao
-from utilities import STATUS_CODE
+from utilities import STATUS_CODE, format_date
 
 
 class JobController:
@@ -70,3 +70,25 @@ class JobController:
                 job_id=data['job_id'])),  STATUS_CODE['not_found']
 
         return jsonify("Job {job_id} updated successfully!".format(job_id=data['job_id'])), STATUS_CODE['ok']
+
+    def get_job_list_by_status(self, data):
+        jobs_list, error_msg = self.dao.get_job_list_by_status(data)
+        if error_msg is not None:
+            return jsonify(error_msg), STATUS_CODE['bad_request']
+
+        if jobs_list is None:
+            return jsonify("No jobs were found with status={status}.".format(status=data['status'])), \
+                   STATUS_CODE['not_found']
+
+        results = []
+        for row in jobs_list:
+            job = {
+                'job_id': row[0],
+                'title': row[1],
+                'price': row[2],
+                'categories': row[3],
+                'date_posted': format_date(row[4]),
+            }
+            results.append(job)
+
+        return jsonify(results), STATUS_CODE['ok']

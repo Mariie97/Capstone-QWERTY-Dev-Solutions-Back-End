@@ -58,7 +58,7 @@ class JobDao(MainDao):
                 'where job_id=%s ' \
                 'order by date asc;'
 
-        cursor.execute(query, (data['job_id'],))
+        cursor.execute(query, (data['job_id'], ))
         requests_list = self.convert_to_list(cursor)
         if requests_list.__len__() == 0:
             return None
@@ -94,7 +94,21 @@ class JobDao(MainDao):
 
             self.conn.commit()
             return True, None
-        except DatabaseError as error:
+        except (Exception, DatabaseError) as error:
             return None, error.pgerror
         finally:
             self.conn.close()
+
+    @exception_handler
+    def get_job_list_by_status(self, data):
+        cursor = self.conn.cursor()
+        query = 'select job_id, title, price, categories, date_posted ' \
+                'from jobs ' \
+                'where status=%s ' \
+                'order by date_posted asc;'
+        cursor.execute(query, (data['status'], ))
+        requests_list = self.convert_to_list(cursor)
+        if requests_list.__len__() == 0:
+            return None, None
+        else:
+            return requests_list, None

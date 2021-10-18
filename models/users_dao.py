@@ -161,7 +161,7 @@ class UserDao(MainDao):
                              query_info[12], new_number]
 
             return user_info, None
-        except DatabaseError as error:
+        except (Exception, DatabaseError) as error:
             return None, error.pgerror
         finally:
             self.conn.close()
