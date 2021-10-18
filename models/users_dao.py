@@ -134,9 +134,11 @@ class UserDao(MainDao):
         cursor.execute(query, (user['user_id'], ))
         rate = cursor.fetchone()[0]
         if rate is None:
-            user_info = user_info + ('0', )
+            user_info = user_info + (None, )
         else:
-            user_info = user_info + (format(rate, ".2f"), )
+            rate_value = float(rate[0])
+            format_number = int(rate_value) if rate_value.is_integer() else format(rate_value, ".2f")
+            user_info = user_info + (format_number, )
 
         return user_info, None
 
