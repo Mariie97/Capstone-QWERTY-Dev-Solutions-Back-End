@@ -127,11 +127,32 @@ class JobDao(MainDao):
     @exception_handler
     def get_job_list_by_status(self, data):
         cursor = self.conn.cursor()
-        query = 'select job_id, title, price, categories, date_posted ' \
-                'from jobs ' \
-                'where status=%s ' \
-                'order by date_posted asc;'
-        cursor.execute(query, (data['status'], ))
+        if 'month' in data and 'year' in data:
+            query = 'select job_id, title, price, categories, date_posted ' \
+                    'from jobs ' \
+                    'where status=%s and date_part(\'month\', date_posted)=%s and date_part(\'year\', date_posted)=%s' \
+                    ' order by date_posted desc;'
+            cursor.execute(query, (data['status'], data['month'], data['year']))
+        elif 'month' in data:
+            query = 'select job_id, title, price, categories, date_posted ' \
+                    'from jobs ' \
+                    'where status=%s and date_part(\'month\', date_posted)=%s ' \
+                    'order by date_posted desc;'
+            cursor.execute(query, (data['status'], data['month'],))
+        elif 'year' in data:
+            query = 'select job_id, title, price, categories, date_posted ' \
+                    'from jobs ' \
+                    'where status=%s and date_part(\'year\', date_posted)=%s ' \
+                    'order by date_posted desc;'
+            cursor.execute(query, (data['status'], data['year'],))
+        else:
+            query = 'select job_id, title, price, categories, date_posted ' \
+                    'from jobs ' \
+                    'where status=%s ' \
+                    'order by date_posted desc ' \
+                    'limit 10;'
+            cursor.execute(query, (data['status'], ))
+
         requests_list = self.convert_to_list(cursor)
         if requests_list.__len__() == 0:
             return None, None

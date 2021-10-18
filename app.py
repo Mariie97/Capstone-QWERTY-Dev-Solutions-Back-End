@@ -180,6 +180,11 @@ def job_info(job_id):
 @jwt_required()
 def jobs_list(status):
     data = {'status': status}
+    if request.args is not None:
+        for key, value in request.args.items():
+            data.update({
+                key: value
+            })
     return JobController().get_job_list_by_status(data)
 
 
