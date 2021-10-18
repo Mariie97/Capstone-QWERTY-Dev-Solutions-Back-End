@@ -1,13 +1,30 @@
 from flask import jsonify
 
 from models.jobs_dao import JobDao
-from utilities import STATUS_CODE
+from utilities import STATUS_CODE, format_date, generate_profile_pic_url
 
 
 class JobController:
 
     def __init__(self):
         self.dao = JobDao()
+
+    def job_creation_dict(self, data):
+        return{
+            'job_id': data[0],
+            'owner_id': data[1],
+            'title': data[2],
+            'description': data[3],
+            'price': data[4],
+            'category': data[5]
+        }
+
+    def create_job(self, data):
+        job, error_msg = self.dao.create_job(data)
+        if error_msg is not None:
+            return jsonify(error_msg), STATUS_CODE['bad_request']
+
+        return jsonify(self.job_creation_dict(job)), STATUS_CODE['created']
 
     def get_requests_list(self, data):
         requests = self.dao.get_requests_list(data)
@@ -52,6 +69,59 @@ class JobController:
                 job_id=data['job_id'])),  STATUS_CODE['not_found']
 
         return jsonify("Job {job_id} updated successfully!".format(job_id=data['job_id'])), STATUS_CODE['ok']
+
+    def get_job_details(self, data):
+        details, error_msg = self.dao.get_job_details(data)
+        if error_msg is not None:
+            return jsonify(error_msg), STATUS_CODE['bad_request']
+
+        if details is None:
+            return jsonify("Job with id={job_id} not found".format(job_id=data['job_id'])), STATUS_CODE['not_found']
+
+        details_dict = {
+            'owner_id': details[0][0],
+            'student_id': details[0][1],
+            'title': details[0][2],
+            'description': details[0][3],
+            'price': details[0][4],
+            'categories': details[0][5],
+            'status': details[0][6],
+            'date_posted': format_date(details[0][7]),
+            'pdf': details[0][8],
+            'street': details[0][9],
+            'city': details[0][10],
+            'zipcode': details[0][11],
+            'owner_name': details[0][12],
+            'owner_last': details[0][13],
+            'owner_image': details[0][14] if details[0][14] is None else generate_profile_pic_url(details[0][14]),
+            'student_name': details[0][15] if details[0][1] is not None else None,
+            'student_last': details[0][16] if details[0][1] is not None else None,
+            'days': details[1],
+        }
+
+        return jsonify(details_dict), STATUS_CODE['ok']
+
+    def get_job_list_by_status(self, data):
+        jobs_list, error_msg = self.dao.get_job_list_by_status(data)
+        if error_msg is not None:
+            return jsonify(error_msg), STATUS_CODE['bad_request']
+
+        if jobs_list is None:
+            return jsonify("No jobs were found with status={status}.".format(status=data['status'])), \
+                   STATUS_CODE['not_found']
+
+        results = []
+        for row in jobs_list:
+            job = {
+                'job_id': row[0],
+                'title': row[1],
+                'price': row[2],
+                'categories': row[3],
+                'date_posted': format_date(row[4]),
+            }
+            results.append(job)
+
+        return jsonify(results), STATUS_CODE['ok']
 
     def set_job_status(self, data):
         is_updated, error_msg = self.dao.set_job_status(data)

@@ -9,9 +9,9 @@ from config.config import JWT_SECRET_KEY, JWT_TOKEN_LOCATION, JWT_ACCESS_TOKEN_E
     SECRET_KEY
 from controllers.jobs_controller import JobController
 from controllers.users_controller import UserController
-from utilities import SUPERUSER_ACCOUNT, CLIENT_ACCOUNT, STUDENT_ACCOUNT, validate_email, validate_password_info, \
-    validate_assign_job_data, validate_user_info, validate_login_data, STATUS_CODE, upload_image_aws, \
-    validate_profile_data, validate_job_status, validate_job_rate
+from utilities import validate_user_info, validate_login_data, STATUS_CODE, SUPERUSER_ACCOUNT, \
+    CLIENT_ACCOUNT, STUDENT_ACCOUNT, validate_password_info, validate_email, upload_image_aws, validate_profile_data, \
+    validate_assign_job_data, validate_job_rate, validate_job_status, validate_create_job
 
 app = Flask(__name__)
 
@@ -163,9 +163,42 @@ def verify_is_auth():
 
 
 @app.route('/api/user_info/<int:user_id>', methods=['GET'])
+@jwt_required()
 def user_info(user_id):
     data = {'user_id': user_id}
     return UserController().get_user_info(data)
+
+
+@app.route('/api/job_details/<int:job_id>', methods=['GET'])
+@jwt_required()
+def job_info(job_id):
+    data = {'job_id': job_id}
+    return JobController().get_job_details(data)
+
+
+@app.route('/api/jobs_list/<int:status>', methods=['GET'])
+@jwt_required()
+def jobs_list(status):
+    data = {'status': status}
+    return JobController().get_job_list_by_status(data)
+
+
+@app.route('/api/create_job', methods=['POST'])
+@jwt_required()
+def create_job():
+    error_msg = validate_create_job(request.json)
+    if error_msg is not None:
+        return jsonify(error_msg), STATUS_CODE['bad_request']
+
+    data = request.json
+    return JobController().create_job(data)
+
+
+@app.route('/api/delete_user/<int:user_id>', methods=['POST'])
+@jwt_required()
+def delete_user(user_id):
+    data = {'user_id': user_id}
+    return UserController().delete_user(data)
 
 
 @app.route('/api/job/<int:job_id>', methods=['PUT'])

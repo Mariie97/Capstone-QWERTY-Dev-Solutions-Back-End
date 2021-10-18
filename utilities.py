@@ -21,6 +21,16 @@ JOB_REQUESTS_STATE = {
     'closed': '2'
 }
 
+WEEK_DAYS = {
+    'domingo': '1',
+    'lunes': '2',
+    'martes': '3',
+    'miercoles': '4',
+    'jueves': '5',
+    'viernes': '6',
+    'sabado': '7',
+}
+
 JOB_STATUS = {
     'posted': '1',
     'in_process': '2',
@@ -107,6 +117,19 @@ def validate_assign_job_data(data):
     return None
 
 
+def validate_create_job(data):
+    expected_params = ['user_id', 'title', 'description', 'price', 'categories', 'street', 'city',
+                       'zipcode', 'd', 'l', 'm', 'w', 'j', 'v', 's']
+    if data is None:
+        return 'The following parameters are required: ' + concat_list_to_string(expected_params)
+
+    for param in expected_params:
+        if param not in data:
+            return 'The following parameters are required: ' + concat_list_to_string(expected_params)
+
+    return None
+
+
 def validate_profile_data(data):
     expected_params = ['first_name', 'last_name', 'about', 'street', 'city', 'zipcode']
 
@@ -156,6 +179,10 @@ def upload_image_aws(user_id, image_file):
         return file_name
     except Exception as e:
         return None
+
+
+def format_date(date):
+    return date.strftime('%B %d, %Y')
 
 
 def validate_job_status(data):
