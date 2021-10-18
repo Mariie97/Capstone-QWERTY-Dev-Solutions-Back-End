@@ -141,7 +141,7 @@ class UserDao(MainDao):
         if rate is None:
             user_info = user_info + (None, )
         else:
-            rate_value = float(rate[0])
+            rate_value = float(rate)
             format_number = int(rate_value) if rate_value.is_integer() else format(rate_value, ".2f")
             user_info = user_info + (format_number, )
 
