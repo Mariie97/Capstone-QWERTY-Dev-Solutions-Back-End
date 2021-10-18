@@ -2,7 +2,7 @@ from flask import jsonify
 from psycopg2 import IntegrityError
 
 from models.users_dao import UserDao
-from utilities import STATUS_CODE
+from utilities import STATUS_CODE, generate_profile_pic_url
 
 
 class UserController:
@@ -47,20 +47,17 @@ class UserController:
 
     def get_user_info_dict(self, data):
         return {
-            'address_id': data[0],
-            'user_id': data[1],
-            'first_name': data[2],
-            'last_name': data[3],
-            'password': data[4],
-            'email': data[5],
-            'image': data[6],
-            'type': data[7],
-            'about': data[8],
-            'cancellations': data[9],
-            'street': data[10],
-            'city': data[11],
-            'zipcode': data[12],
-            'rate': data[13]
+            'first_name': data[0],
+            'last_name': data[1],
+            'email': data[2],
+            'image': generate_profile_pic_url(data[3]) if data[3] is not None else None,
+            'about': data[4],
+            'cancellations': data[5],
+            'type': data[6],
+            'street': data[8] if data[8] is not None else None,
+            'city': data[9] if data[9] is not None else None,
+            'zipcode': data[10] if data[10] is not None else None,
+            'rate': data[11],
         }
 
     def get_all_users(self, data):
@@ -68,9 +65,10 @@ class UserController:
         result_list = []
         for row in users:
             obj = {
-                'first_name': row[0],
-                'last_name': row[1],
-                'email': row[2],
+                'user_id': row[0],
+                'first_name': row[1],
+                'last_name': row[2],
+                'email': row[3],
             }
             result_list.append(obj)
         return jsonify(result_list), STATUS_CODE['ok']
@@ -113,11 +111,22 @@ class UserController:
             return jsonify(e.pgerror), STATUS_CODE['bad_request']
 
     def get_user_info(self, userid):
-        try:
-            user, error_msg = self.dao.get_user_info(userid)
-            if user is None:
-                return jsonify("User not found"), STATUS_CODE['not_found']
-            else:
-                return jsonify(self.get_user_info_dict(user)), STATUS_CODE['ok']
-        except Exception as e:
-            return jsonify(e.pgerror), STATUS_CODE['bad_request']
+        user, error_msg = self.dao.get_user_info(userid)
+        if error_msg is not None:
+            return jsonify(error_msg), STATUS_CODE['bad_request']
+
+        if user is None:
+            return jsonify("User not found"), STATUS_CODE['not_found']
+
+        return jsonify(self.get_user_info_dict(user)), STATUS_CODE['ok']
+
+    def delete_user(self, data):
+        deleted, error_msg = self.dao.delete_user(data)
+        if error_msg is not None:
+            return jsonify(error_msg), STATUS_CODE['bad_request']
+
+        if not deleted:
+            return jsonify("User with id={id} not found".format(id=data['user_id']))
+
+        return jsonify("User deleted successfully!"), STATUS_CODE['ok']
+

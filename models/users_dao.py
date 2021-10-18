@@ -1,10 +1,9 @@
-import decimal
-from psycopg2 import DatabaseError
+from decorators import exception_handler
 from models.main_dao import MainDao
-from utilities import generate_profile_pic_url
 
 
 class UserDao(MainDao):
+
     def create_user(self, data):
         cursor = self.conn.cursor()
         query = 'insert into users (first_name, last_name, password, email, type) values (%s, %s, ' \
@@ -25,7 +24,7 @@ class UserDao(MainDao):
         cursor = self.conn.cursor()
         query = 'select user_id, type ' \
                 'from users ' \
-                'where email=%s and password=crypt(%s, password);'
+                'where email=%s and password=crypt(%s, password) and deleted=false;'
         cursor.execute(query, (credentials['email'], credentials['password']))
         result = cursor.fetchone()
         return result
@@ -35,14 +34,14 @@ class UserDao(MainDao):
         if data['image_key'] is not None:
             query = 'update users ' \
                     'set first_name = %s, last_name = %s, image = %s, about = %s ' \
-                    'where user_id = %s returning address_id;'
+                    'where user_id=%s and deleted=false returning address_id;'
 
             cursor.execute(query, (data['first_name'].capitalize(), data['last_name'].capitalize(), data['image_key'],
-                           data['about'], data['user_id']))
+                                   data['about'], data['user_id']))
         else:
             query = 'update users ' \
                     'set first_name = %s, last_name = %s, about = %s ' \
-                    'where user_id = %s returning address_id;'
+                    'where user_id=%s and deleted=false returning address_id;'
 
             cursor.execute(query, (data['first_name'].capitalize(), data['last_name'].capitalize(), data['about'],
                                    data['user_id']))
@@ -79,18 +78,18 @@ class UserDao(MainDao):
 
     def get_all_users(self, data):
         cursor = self.conn.cursor()
-        query = 'select first_name, last_name, email ' \
+        query = 'select user_id, first_name, last_name, email ' \
                 'from users ' \
-                'where type=%s;'
+                'where type=%s and deleted=false ' \
+                'order by first_name;'
         cursor.execute(query, (data['type'], ))
-        results = []
-        for row in cursor:
-            results.append(row)
+        results = self.convert_to_list(cursor)
         return results
 
     def retrieve_questions(self, user_email):
         cursor = self.conn.cursor()
-        query = 'select type, answer from questions where user_id in (select user_id from users where email = %s);'
+        query = 'select type, answer ' \
+                'from questions where user_id in (select user_id from users where email=%s and deleted=false);'
         cursor.execute(query, (user_email['email'],))
 
         if cursor.rowcount == 0:
@@ -105,7 +104,8 @@ class UserDao(MainDao):
 
     def change_password(self, user_email):
         cursor = self.conn.cursor()
-        query = 'update users set password = crypt(%s, gen_salt(\'bf\')) where email = %s returning email, password;'
+        query = 'update users set password = crypt(%s, gen_salt(\'bf\')) where email=%s and deleted=false ' \
+                'returning email, password;'
         cursor.execute(query, (user_email['password'], user_email['email']))
         info = cursor.fetchone()
         if info is None:
@@ -114,54 +114,46 @@ class UserDao(MainDao):
 
         return info
 
+    @exception_handler
     def get_user_info(self, user):
-        try:
-            cursor = self.conn.cursor()
+        cursor = self.conn.cursor()
+        query = 'select first_name, last_name, email, image, about, cancellations, type, address_id ' \
+                'from users ' \
+                'where user_id=%s and deleted=false;'
 
-            query = 'select address_id from users where user_id = %s;'
-            query2 = 'select AVG(value) from rates where user_id = %s;'
-            query3 = 'select image from users where user_id = %s;'
+        cursor.execute(query, (user['user_id'], ))
+        user_info = cursor.fetchone()
+        if user_info is None:
+            return None, None
 
-            cursor.execute(query, (user['user_id'],))
-            address_info = cursor.fetchone()
+        if user_info[-1] is not None:
+            query = 'select street, city, zipcode ' \
+                    'from address ' \
+                    'where address_id=%s;'
+            cursor.execute(query, (user_info[-1], ))
+            user_info = user_info + cursor.fetchone()
+        else:
+            user_info = user_info + (None, None, None)
 
-            if address_info is None:
-                return None, None
+        query = 'select AVG(value) from rates where user_id=%s;'
+        cursor.execute(query, (user['user_id'], ))
+        rate = cursor.fetchone()[0]
+        if rate is None:
+            user_info = user_info + (None, )
+        else:
+            rate_value = float(rate[0])
+            format_number = int(rate_value) if rate_value.is_integer() else format(rate_value, ".2f")
+            user_info = user_info + (format_number, )
 
-            cursor.execute(query2, (user['user_id'],))
-            rate_average = cursor.fetchone()
+        return user_info, None
 
-            if rate_average[0] is None:
-                new_number = str(decimal.Decimal(0.0))
-            else:
-                new_number = str(decimal.Decimal(rate_average[0]))
+    @exception_handler
+    def delete_user(self, data):
+        cursor = self.conn.cursor()
+        query = 'update users set deleted=true where user_id=%s;'
+        cursor.execute(query, (data['user_id'], ))
+        if cursor.rowcount == 0:
+            return False, None
 
-            cursor.execute(query3, (user['user_id'],))
-            image_info = cursor.fetchone()
-
-            if image_info is not None:
-                new_image = generate_profile_pic_url(image_info[0])
-            else:
-                new_image = image_info[0]
-
-            if address_info[0] is None:
-                query1 = 'select * from users where user_id = %s;'
-                cursor.execute(query1, (user['user_id'],))
-                address_user = cursor.fetchone()
-                user_info = [None, address_user[0], address_user[1], address_user[2], address_user[3],
-                             address_user[4], new_image, address_user[6], address_user[7], address_user[8],
-                             None, None, None, new_number]
-
-            else:
-                query1 = 'select * from users natural inner join address where user_id = %s;'
-                cursor.execute(query1, (user['user_id'],))
-                query_info = cursor.fetchone()
-                user_info = [query_info[0], query_info[1], query_info[2], query_info[3], query_info[4], query_info[5],
-                             new_image, query_info[7], query_info[8], query_info[9], query_info[10], query_info[11],
-                             query_info[12], new_number]
-
-            return user_info, None
-        except (Exception, DatabaseError) as error:
-            return None, error.pgerror
-        finally:
-            self.conn.close()
+        self.conn.commit()
+        return True, None

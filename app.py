@@ -190,5 +190,12 @@ def create_job():
     return JobController().create_job(data)
 
 
+@app.route('/api/delete_user/<int:user_id>', methods=['POST'])
+@jwt_required()
+def delete_user(user_id):
+    data = {'user_id': user_id}
+    return UserController().delete_user(data)
+
+
 if __name__ == '__main__':
     app.run(debug=True)
