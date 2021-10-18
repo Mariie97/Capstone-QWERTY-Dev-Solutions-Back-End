@@ -22,7 +22,7 @@ class JobController:
 
     def create_job(self, data):
         try:
-            job = self.dao.create_job(data)
+            job, error_msg = self.dao.create_job(data)
             return jsonify(self.job_creation_dict(job)), STATUS_CODE['created']
         except IntegrityError as e:
             return jsonify(e.pgerror), STATUS_CODE['bad_request']

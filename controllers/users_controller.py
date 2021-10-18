@@ -114,7 +114,7 @@ class UserController:
 
     def get_user_info(self, userid):
         try:
-            user = self.dao.get_user_info(userid)
+            user, error_msg = self.dao.get_user_info(userid)
             if user is None:
                 return jsonify("User not found"), STATUS_CODE['not_found']
             else:
