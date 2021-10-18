@@ -50,7 +50,6 @@ class UserDao(MainDao):
         if user_info is None:
             return None
         else:
-            self.conn.commit()
 
             if data['street'] is not None and data['city'] is not None and data['zipcode'] is not None:
 
@@ -59,7 +58,6 @@ class UserDao(MainDao):
                     cursor.execute(query1, (data['street'], data['city'], data['zipcode']))
 
                     address_info = cursor.fetchone()
-                    self.conn.commit()
 
                     query2 = 'update users set address_id = %s where user_id = %s;'
                     cursor.execute(query2, (address_info[0], data['user_id']))
@@ -68,8 +66,15 @@ class UserDao(MainDao):
                     query = 'update address set street = %s, city = %s, zipcode = %s where address_id = %s;'
                     cursor.execute(query, (data['street'], data['city'], data['zipcode'], user_info[0]))
 
-                self.conn.commit()
-            return user_info
+            else:
+                if user_info[0] is not None and (data['street'] is None or data['city'] is None or data['zipcode']
+                                                 is None):
+                    query = 'delete from address ' \
+                            'where address_id = %s;'
+                    cursor.execute(query, (user_info[0], ))
+
+            self.conn.commit()
+            return user_info, None
 
     def get_all_users(self, data):
         cursor = self.conn.cursor()

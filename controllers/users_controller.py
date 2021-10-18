@@ -91,7 +91,7 @@ class UserController:
     def edit_user(self, user_info):
         try:
             self.clean_data(user_info)
-            user = self.dao.edit_user(user_info)
+            user, error_msg = self.dao.edit_user(user_info)
             if user is None:
                 return jsonify('There is not user with id={id}'.format(id=user_info['user_id'])), \
                        STATUS_CODE['not_found']
