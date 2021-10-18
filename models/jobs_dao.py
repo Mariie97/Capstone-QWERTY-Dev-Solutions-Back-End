@@ -1,7 +1,7 @@
 from psycopg2 import DatabaseError
 
 from models.main_dao import MainDao
-from utilities import JOB_REQUESTS_STATE, JOB_STATE
+from utilities import JOB_REQUESTS_STATE, JOB_STATE, DAY_STATE
 
 
 class JobDao(MainDao):
@@ -34,19 +34,19 @@ class JobDao(MainDao):
         cursor = self.conn.cursor()
         query = 'insert into days (job_id, weekday) ' \
                 'values (%s, %s);'
-        if dom == '1':
+        if dom == DAY_STATE['work']:
             cursor.execute(query, (job_id, '1'))
-        if lun == '1':
+        if lun == DAY_STATE['work']:
             cursor.execute(query, (job_id, '2'))
-        if mar == '1':
+        if mar == DAY_STATE['work']:
             cursor.execute(query, (job_id, '3'))
-        if wed == '1':
+        if wed == DAY_STATE['work']:
             cursor.execute(query, (job_id, '4'))
-        if jue == '1':
+        if jue == DAY_STATE['work']:
             cursor.execute(query, (job_id, '5'))
-        if vie == '1':
+        if vie == DAY_STATE['work']:
             cursor.execute(query, (job_id, '6'))
-        if sab == '1':
+        if sab == DAY_STATE['work']:
             cursor.execute(query, (job_id, '7'))
         self.conn.commit()
         self.conn.close()

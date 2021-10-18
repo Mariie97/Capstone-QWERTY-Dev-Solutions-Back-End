@@ -21,6 +21,11 @@ JOB_REQUESTS_STATE = {
     'closed': '2'
 }
 
+DAY_STATE = {
+    'work': '1',
+    'no_work': '0'
+}
+
 JOB_STATE = {
     'posted': '1',
     'in_process': '2',
