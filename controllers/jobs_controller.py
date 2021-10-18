@@ -21,11 +21,11 @@ class JobController:
         }
 
     def create_job(self, data):
-        try:
-            job, error_msg = self.dao.create_job(data)
-            return jsonify(self.job_creation_dict(job)), STATUS_CODE['created']
-        except IntegrityError as e:
-            return jsonify(e.pgerror), STATUS_CODE['bad_request']
+        job, error_msg = self.dao.create_job(data)
+        if error_msg is not None:
+            return jsonify(error_msg), STATUS_CODE['bad_request']
+
+        return jsonify(self.job_creation_dict(job)), STATUS_CODE['created']
 
     def get_requests_list(self, data):
         requests = self.dao.get_requests_list(data)

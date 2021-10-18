@@ -21,9 +21,14 @@ JOB_REQUESTS_STATE = {
     'closed': '2'
 }
 
-DAY_STATE = {
-    'work': '1',
-    'no_work': '0'
+WEEK_DAYS = {
+    'domingo': '1',
+    'lunes': '2',
+    'martes': '3',
+    'miercoles': '4',
+    'jueves': '5',
+    'viernes': '6',
+    'sabado': '7',
 }
 
 JOB_STATE = {
