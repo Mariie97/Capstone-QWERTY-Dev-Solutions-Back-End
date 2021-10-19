@@ -241,5 +241,11 @@ def add_message():
     return ChatController().create_message(data)
 
 
+@app.route('/api/retrieve_messages/<int:job_id>', methods=['GET'])
+def retrieve_chat_messages(job_id):
+    data = {'job_id': job_id}
+    return ChatController().get_job_messages(data)
+
+
 if __name__ == '__main__':
     app.run(debug=True)
