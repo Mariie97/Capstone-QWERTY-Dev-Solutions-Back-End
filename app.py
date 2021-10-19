@@ -11,7 +11,7 @@ from controllers.jobs_controller import JobController
 from controllers.users_controller import UserController
 from utilities import validate_user_info, validate_login_data, STATUS_CODE, SUPERUSER_ACCOUNT, \
     CLIENT_ACCOUNT, STUDENT_ACCOUNT, validate_password_info, validate_email, upload_image_aws, validate_profile_data, \
-    validate_assign_job_data, validate_job_rate, validate_job_status, validate_create_job
+    validate_assign_job_data, validate_job_rate, validate_job_status, validate_create_job, format_price
 
 app = Flask(__name__)
 
@@ -198,6 +198,10 @@ def create_job():
         return jsonify(error_msg), STATUS_CODE['bad_request']
 
     data = request.json
+    data.update({
+        'price': format_price(str(data['price']), True)
+    })
+
     return JobController().create_job(data)
 
 

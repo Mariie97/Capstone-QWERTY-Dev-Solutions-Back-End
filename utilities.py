@@ -1,3 +1,4 @@
+import locale
 import os
 import re
 
@@ -220,3 +221,11 @@ def validate_job_rate(data):
         return 'Rate value must be in the range of 1 to 5.'
 
     return None
+
+
+def format_price(price, clean=False):
+    if clean:
+        return price.replace(',', '')
+
+    locale.setlocale(locale.LC_ALL, '')
+    return locale.currency(price, grouping=True)

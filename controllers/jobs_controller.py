@@ -1,7 +1,7 @@
 from flask import jsonify
 
 from models.jobs_dao import JobDao
-from utilities import STATUS_CODE, format_date, generate_profile_pic_url, JOB_CATEGORIES
+from utilities import STATUS_CODE, format_date, generate_profile_pic_url, JOB_CATEGORIES, format_price
 
 
 class JobController:
@@ -15,7 +15,7 @@ class JobController:
             'owner_id': data[1],
             'title': data[2],
             'description': data[3],
-            'price': data[4],
+            'price': format_price(data[4]),
             'category': data[5]
         }
 
@@ -66,7 +66,7 @@ class JobController:
                 request = {
                     'job_id': row[0],
                     'title': row[1],
-                    'price': row[2],
+                    'price':  format_price(row[2]),
                     'categories': row[3],
                     'date': row[4],
                 }
@@ -97,7 +97,7 @@ class JobController:
             'student_id': details[0][1],
             'title': details[0][2],
             'description': details[0][3],
-            'price': details[0][4],
+            'price':  format_price(details[0][4]),
             'categories': JOB_CATEGORIES[details[0][5]],
             'status': details[0][6],
             'date_posted': format_date(details[0][7]),
@@ -130,7 +130,7 @@ class JobController:
             job = {
                 'job_id': row[0],
                 'title': row[1],
-                'price': row[2],
+                'price':  format_price(row[2]),
                 'categories': row[3],
                 'date_posted': format_date(row[4]),
             }
