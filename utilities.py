@@ -200,7 +200,7 @@ def validate_job_status(data):
     if data is None or 'status' not in data:
         return 'The following parameter is required: status'
 
-    if data['status'] not in JOB_STATUS.values():
+    if str(data['status']) not in JOB_STATUS.values():
         return 'Valid status: ' + concat_list_to_string(JOB_STATUS.values())
 
     return None

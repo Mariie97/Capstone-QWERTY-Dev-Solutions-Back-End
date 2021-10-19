@@ -95,9 +95,7 @@ class JobDao(MainDao):
             if cursor.rowcount == 0:
                 return False, None
 
-            query = 'update requests set state = %s where job_id=%s;'
-            cursor.execute(query, (JOB_REQUESTS_STATE['closed'], data['job_id']))
-
+            self.close_job_requests(cursor,  data['job_id'])
             if cursor.rowcount == 0:
                 return False, None
 
@@ -155,15 +153,28 @@ class JobDao(MainDao):
     @exception_handler
     def set_job_status(self, data):
         cursor = self.conn.cursor()
-        query = 'update jobs set status = %s where job_id=%s  returning student_id;'
+        query = 'update jobs set status = %s where job_id=%s  returning student_id, owner_id;'
         cursor.execute(query, (data['status'], data['job_id']))
         if cursor.rowcount == 0:
             return None, None
 
-        student_id = cursor.fetchone()[0]
-        if data['status'] == JOB_STATUS['posted'] and student_id is not None:
+        student_id, owner_id = cursor.fetchone()
+
+        status = str(data['status'])
+        # Student cancel the job
+        if status == JOB_STATUS['posted'] and student_id is not None:
             query = 'update jobs set student_id = null where job_id=%s;'
             cursor.execute(query, (data['job_id'], ))
+
+            query = 'update users set cancellations=cancellations + 1 where user_id=%s'
+            cursor.execute(query, (student_id, ))
+
+        # Job's owner cancel the job
+        elif status == JOB_STATUS['cancelled']:
+            query = 'update users set cancellations=cancellations + 1 where user_id=%s'
+            cursor.execute(query, (owner_id,))
+
+            self.close_job_requests(cursor, data['job_id'])
 
         self.conn.commit()
         return True, None

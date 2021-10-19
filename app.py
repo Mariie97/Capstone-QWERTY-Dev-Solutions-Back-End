@@ -208,7 +208,7 @@ def delete_user(user_id):
     return UserController().delete_user(data)
 
 
-@app.route('/api/job/<int:job_id>', methods=['PUT'])
+@app.route('/api/job_status/<int:job_id>', methods=['PUT'])
 @jwt_required()
 def change_job_status(job_id):
     error_msg = validate_job_status(request.json)
