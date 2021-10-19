@@ -132,7 +132,15 @@ class JobDao(MainDao):
                 'where job_id=%s;'
         cursor.execute(query, (data['job_id'], ))
         days = [row[0] for row in cursor.fetchall()]
-        details = (details, days)
+
+        query = 'select student_id ' \
+                'from requests ' \
+                'where job_id=%s ' \
+                'order by student_id asc;'
+        cursor.execute(query, (data['job_id'], ))
+        requests = [row[0] for row in cursor.fetchall()]
+
+        details = (details, days, requests)
 
         return details, None
 

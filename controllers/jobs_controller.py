@@ -111,6 +111,7 @@ class JobController:
             'student_name': details[0][15] if details[0][1] is not None else None,
             'student_last': details[0][16] if details[0][1] is not None else None,
             'days': details[1],
+            'users_requested': details[2],
         }
 
         return jsonify(details_dict), STATUS_CODE['ok']
