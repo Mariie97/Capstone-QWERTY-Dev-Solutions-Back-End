@@ -125,6 +125,13 @@ def change_password():
             return jsonify(error_msg), STATUS_CODE['bad_request']
 
 
+@app.route('/api/request_job', methods=['POST'])
+@jwt_required()
+def add_job_request():
+    data = request.json
+    return JobController().add_job_request(data)
+
+
 @app.route('/api/job_requests', methods=['GET'])
 @jwt_required()
 def job_requests_list():

@@ -21,6 +21,17 @@ JOB_REQUESTS_STATE = {
     'closed': '2'
 }
 
+JOB_CATEGORIES = {
+    1:  'Animals',
+    2:  'Auto',
+    3:  'Education',
+    4:  'Events',
+    5:  'Home',
+    6:  'Other',
+    7:  'Self-care',
+    8:  'Shop',
+}
+
 WEEK_DAYS = {
     'domingo': '1',
     'lunes': '2',

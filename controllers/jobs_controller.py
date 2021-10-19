@@ -1,7 +1,7 @@
 from flask import jsonify
 
 from models.jobs_dao import JobDao
-from utilities import STATUS_CODE, format_date, generate_profile_pic_url
+from utilities import STATUS_CODE, format_date, generate_profile_pic_url, JOB_CATEGORIES
 
 
 class JobController:
@@ -25,6 +25,20 @@ class JobController:
             return jsonify(error_msg), STATUS_CODE['bad_request']
 
         return jsonify(self.job_creation_dict(job)), STATUS_CODE['created']
+
+    def add_job_request(self, data):
+        request, error_msg = self.dao.add_job_request(data)
+        if error_msg is not None:
+            return jsonify(error_msg), STATUS_CODE['bad_request']
+
+        dict = {
+            'job_id': request[0],
+            'student_id': request[1],
+            'date': request[2],
+            'state': request[3],
+        }
+
+        return jsonify(dict), STATUS_CODE['ok']
 
     def get_requests_list(self, data):
         requests = self.dao.get_requests_list(data)
@@ -84,7 +98,7 @@ class JobController:
             'title': details[0][2],
             'description': details[0][3],
             'price': details[0][4],
-            'categories': details[0][5],
+            'categories': JOB_CATEGORIES[details[0][5]],
             'status': details[0][6],
             'date_posted': format_date(details[0][7]),
             'pdf': details[0][8],

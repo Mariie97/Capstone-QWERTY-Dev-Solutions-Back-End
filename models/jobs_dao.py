@@ -46,6 +46,20 @@ class JobDao(MainDao):
         if sab == '1':
             cursor.execute(query, (job_id, WEEK_DAYS['sabado']))
 
+    @exception_handler
+    def add_job_request(self, data):
+        cursor = self.conn.cursor()
+        query = 'insert into requests (job_id, student_id) values (%s, %s) returning job_id, student_id, date, state;'
+        cursor.execute(query, (data['job_id'], data['student_id']))
+        request = cursor.fetchone()
+        self.conn.commit()
+        return request, None
+
+    @staticmethod
+    def close_job_requests(cursor, job_id):
+        query = 'update requests set state = %s where job_id=%s and state=%s;'
+        cursor.execute(query, (JOB_REQUESTS_STATE['closed'], job_id, JOB_REQUESTS_STATE['open']))
+
     def get_requests_list(self, data):
         cursor = self.conn.cursor()
         query = 'select user_id, first_name, last_name, image, date ' \
