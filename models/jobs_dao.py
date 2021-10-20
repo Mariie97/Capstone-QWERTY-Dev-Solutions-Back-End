@@ -60,6 +60,18 @@ class JobDao(MainDao):
         query = 'update requests set state = %s where job_id=%s and state=%s;'
         cursor.execute(query, (JOB_REQUESTS_STATE['closed'], job_id, JOB_REQUESTS_STATE['open']))
 
+    @exception_handler
+    def cancel_job_request(self, data):
+        cursor = self.conn.cursor()
+        query = 'update requests set state = %s where job_id=%s and student_id=%s and state=%s;'
+        cursor.execute(query, (JOB_REQUESTS_STATE['closed'], data['job_id'], data['student_id'],
+                       JOB_REQUESTS_STATE['open']))
+        if cursor.rowcount == 0:
+            return None, None
+
+        self.conn.commit()
+        return True, None
+
     def get_requests_list(self, data):
         cursor = self.conn.cursor()
         query = 'select user_id, first_name, last_name, image, date ' \

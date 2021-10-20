@@ -40,6 +40,19 @@ class JobController:
 
         return jsonify(dict), STATUS_CODE['ok']
 
+    def cancel_job_request(self, data):
+        updated, error_msg = self.dao.cancel_job_request(data)
+        if error_msg is not None:
+            return jsonify(error_msg), STATUS_CODE['bad_request']
+
+        if updated is None:
+            return jsonify('No request were found with the given criteria.'), STATUS_CODE['not_found']
+
+        return jsonify('Request of student {user_id} for job {job_id} closed successfully!'.format(
+            user_id=data['student_id'],
+            job_id=data['job_id']
+        )), STATUS_CODE['ok']
+
     def get_requests_list(self, data):
         requests = self.dao.get_requests_list(data)
         list = []
