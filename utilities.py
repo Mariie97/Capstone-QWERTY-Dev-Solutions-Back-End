@@ -222,6 +222,6 @@ def format_price(price, clean=False):
     return locale.currency(price, grouping=True)
 
 
-def validate_request_cancellation(data):
+def validate_job_requests(data):
     expected_params = ['job_id', 'student_id']
     return validate_expected_param(expected_params, data)
