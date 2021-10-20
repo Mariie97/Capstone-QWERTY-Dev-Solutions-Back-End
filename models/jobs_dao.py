@@ -18,7 +18,7 @@ class JobDao(MainDao):
 
         query = 'insert into jobs (owner_id, title, description, price, categories, address_id) ' \
                 'values (%s, %s, %s, %s, %s, %s) returning job_id, owner_id, title, description, price, categories;'
-        cursor.execute(query, (data['user_id'], data['title'], data['description'], data['price'],
+        cursor.execute(query, (data['user_id'], data['title'].title(), data['description'], data['price'],
                                data['categories'], add_id[0]))
         job_info = cursor.fetchone()
         job_id = job_info[0]
