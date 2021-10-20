@@ -120,13 +120,14 @@ class JobDao(MainDao):
 
     @exception_handler
     def get_job_details(self, data):
+        # TODO: This must be able to return all job without considering the status?
         cursor = self.conn.cursor()
         query = 'select owner_id, student_id, title, description, price, categories, status, date_posted, pdf, ' \
                 'street, city, zipcode, O.first_name, O.last_name, O.image, O.cancellations ' \
                 'from jobs as J ' \
                 'inner join users as O on J.owner_id=O.user_id ' \
-                'inner join address as A on A.address_id=O.address_id ' \
-                'where job_id=%s;'
+                'inner join address as A on A.address_id=J.address_id ' \
+                'where job_id=%s'
         cursor.execute(query, (data['job_id'], ))
         details = cursor.fetchone()
         if details is None:
@@ -147,12 +148,12 @@ class JobDao(MainDao):
         cursor.execute(query, (data['job_id'], ))
         days = [row[0] for row in cursor.fetchall()]
 
-        query = 'select student_id ' \
+        query = 'select student_id, state ' \
                 'from requests ' \
                 'where job_id=%s ' \
                 'order by student_id asc;'
         cursor.execute(query, (data['job_id'], ))
-        requests = [row[0] for row in cursor.fetchall()]
+        requests = self.convert_to_list(cursor)
 
         owner_id = details[0]
         owner_rating = self.get_user_ratings(owner_id, cursor)
@@ -199,6 +200,10 @@ class JobDao(MainDao):
             query = 'update users set cancellations=cancellations + 1 where user_id=%s'
             cursor.execute(query, (owner_id,))
 
+            self.close_job_requests(cursor, data['job_id'])
+
+        # Admin delete the job
+        elif status == JOB_STATUS['deleted']:
             self.close_job_requests(cursor, data['job_id'])
 
         self.conn.commit()
