@@ -110,7 +110,7 @@ class JobDao(MainDao):
     def get_job_details(self, data):
         cursor = self.conn.cursor()
         query = 'select owner_id, student_id, title, description, price, categories, status, date_posted, pdf, ' \
-                'street, city, zipcode, O.first_name, O.last_name, O.image ' \
+                'street, city, zipcode, O.first_name, O.last_name, O.image, O.cancellations ' \
                 'from jobs as J ' \
                 'inner join users as O on J.owner_id=O.user_id ' \
                 'inner join address as A on A.address_id=O.address_id ' \
@@ -120,7 +120,8 @@ class JobDao(MainDao):
         if details is None:
             return None, None
 
-        if details[1] is not None:
+        student_id = details[1]
+        if student_id is not None:
             query = 'select first_name, last_name ' \
                     'from users ' \
                     'where user_id=%s;'
@@ -129,7 +130,8 @@ class JobDao(MainDao):
 
         query = 'select weekday ' \
                 'from days ' \
-                'where job_id=%s;'
+                'where job_id=%s ' \
+                'order by weekday asc;'
         cursor.execute(query, (data['job_id'], ))
         days = [row[0] for row in cursor.fetchall()]
 
@@ -140,7 +142,10 @@ class JobDao(MainDao):
         cursor.execute(query, (data['job_id'], ))
         requests = [row[0] for row in cursor.fetchall()]
 
-        details = (details, days, requests)
+        owner_id = details[0]
+        owner_rating = self.get_user_ratings(owner_id, cursor)
+
+        details = (details, days, requests, owner_rating)
 
         return details, None
 

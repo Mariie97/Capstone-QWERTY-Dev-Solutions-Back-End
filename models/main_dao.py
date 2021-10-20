@@ -16,6 +16,17 @@ class MainDao:
         self.conn = psycopg2.connect(connection_url)
 
     @staticmethod
+    def get_user_ratings(user_id, cursor):
+        query = 'select AVG(value) from rates where user_id=%s;'
+        cursor.execute(query, (user_id,))
+        rate = cursor.fetchone()[0]
+        if rate is None:
+            return None
+        else:
+            rate_value = float(rate)
+            return int(rate_value) if rate_value.is_integer() else format(rate_value, ".2f")
+
+    @staticmethod
     def convert_to_list(cursor):
         list = []
         for row in cursor:

@@ -108,10 +108,12 @@ class JobController:
             'owner_name': details[0][12],
             'owner_last': details[0][13],
             'owner_image': details[0][14] if details[0][14] is None else generate_profile_pic_url(details[0][14]),
-            'student_name': details[0][15] if details[0][1] is not None else None,
-            'student_last': details[0][16] if details[0][1] is not None else None,
+            'owner_cancellations': details[0][15],
+            'student_name': details[0][16] if details[0][1] is not None else None,
+            'student_last': details[0][17] if details[0][1] is not None else None,
             'days': details[1],
             'users_requested': details[2],
+            'owner_rating': details[3],
         }
 
         return jsonify(details_dict), STATUS_CODE['ok']
