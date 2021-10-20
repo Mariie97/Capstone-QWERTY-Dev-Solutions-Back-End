@@ -133,7 +133,7 @@ def validate_create_job(data):
 def validate_profile_data(data):
     expected_params = ['first_name', 'last_name', 'about', 'street', 'city', 'zipcode']
 
-    if data.__len__() == 0:
+    if len(data) == 0:
         return "The following parameters are required: {expected}.".format(
             expected=', '.join(expected_params),
         )
