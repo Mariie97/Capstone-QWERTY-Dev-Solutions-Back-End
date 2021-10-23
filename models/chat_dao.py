@@ -27,7 +27,7 @@ class ChatDao(MainDao):
 
         cursor.execute(query, (data['job_id'], ))
         messages = self.convert_to_list(cursor)
-        if messages.__len__() == 0:
+        if len(messages) == 0:
             return None, None
 
         return messages, None
