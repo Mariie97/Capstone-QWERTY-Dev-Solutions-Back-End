@@ -137,7 +137,7 @@ class JobController:
             return jsonify(error_msg), STATUS_CODE['bad_request']
 
         if jobs_list is None:
-            return jsonify("No jobs were found with status={status}.".format(status=data['status'])), \
+            return jsonify("No jobs were found with the given criterias".format(status=data['status'])), \
                    STATUS_CODE['not_found']
 
         results = []

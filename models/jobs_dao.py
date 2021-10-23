@@ -18,7 +18,7 @@ class JobDao(MainDao):
 
         query = 'insert into jobs (owner_id, title, description, price, categories, address_id) ' \
                 'values (%s, %s, %s, %s, %s, %s) returning job_id, owner_id, title, description, price, categories;'
-        cursor.execute(query, (data['user_id'], data['title'], data['description'], data['price'],
+        cursor.execute(query, (data['user_id'], data['title'].title(), data['description'], data['price'],
                                data['categories'], add_id[0]))
         job_info = cursor.fetchone()
         job_id = job_info[0]
@@ -81,7 +81,7 @@ class JobDao(MainDao):
 
         cursor.execute(query, (data['job_id'], ))
         requests_list = self.convert_to_list(cursor)
-        if requests_list.__len__() == 0:
+        if len(requests_list) == 0:
             return None
         else:
             return requests_list
@@ -94,7 +94,7 @@ class JobDao(MainDao):
                 'order by date asc;'
         cursor.execute(query, (data['student_id'], JOB_REQUESTS_STATE['open']))
         requests_list = self.convert_to_list(cursor)
-        if requests_list.__len__() == 0:
+        if len(requests_list) == 0:
             return None
         else:
             return requests_list
@@ -165,13 +165,30 @@ class JobDao(MainDao):
     @exception_handler
     def get_job_list_by_status(self, data):
         cursor = self.conn.cursor()
+        filters = ''
+        params = [data['status']]
+        if 'month' in data and 'year' in data:
+            filters = 'and date_part(\'month\', date_posted)=%s and date_part(\'year\', date_posted)=%s '
+            params.append(data['month'])
+            params.append(data['year'])
+
+        elif 'month' in data:
+            filters = 'and date_part(\'month\', date_posted)=%s '
+            params.append(data['month'])
+
+        elif 'year' in data:
+            filters = 'and date_part(\'year\', date_posted)=%s '
+            params.append(data['year'])
+
         query = 'select job_id, title, price, categories, date_posted ' \
                 'from jobs ' \
-                'where status=%s ' \
-                'order by date_posted asc;'
-        cursor.execute(query, (data['status'], ))
+                'where status=%s {filters}' \
+                'order by date_posted desc ' \
+                '{limit};'.format(filters=filters, limit='limit 10' if len(params) == 1 else '')
+        cursor.execute(query, params)
+
         requests_list = self.convert_to_list(cursor)
-        if requests_list.__len__() == 0:
+        if len(requests_list) == 0:
             return None, None
         else:
             return requests_list, None
