@@ -28,7 +28,4 @@ class MainDao:
 
     @staticmethod
     def convert_to_list(cursor):
-        list = []
-        for row in cursor:
-            list.append(row)
-        return list
+        return [row for row in cursor.fetchall()]

@@ -214,6 +214,11 @@ def validate_job_rate(data):
     return None
 
 
+def validate_message_data(data):
+    expected_params = ['job_id', 'receiver_id', 'sender_id', 'content']
+    return validate_expected_param(expected_params, data)
+
+
 def format_price(price, clean=False):
     if clean:
         return price.replace(',', '')
