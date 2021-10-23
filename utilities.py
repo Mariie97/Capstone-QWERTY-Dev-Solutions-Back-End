@@ -1,3 +1,4 @@
+import locale
 import os
 import re
 
@@ -19,6 +20,17 @@ account_type = {
 JOB_REQUESTS_STATE = {
     'open': '1',
     'closed': '2'
+}
+
+JOB_CATEGORIES = {
+    1:  'Animals',
+    2:  'Auto',
+    3:  'Education',
+    4:  'Events',
+    5:  'Home',
+    6:  'Other',
+    7:  'Self-care',
+    8:  'Shop',
 }
 
 WEEK_DAYS = {
@@ -182,7 +194,7 @@ def validate_job_status(data):
     if error is not None:
         return error
 
-    if data['status'] not in JOB_STATUS.values():
+    if str(data['status']) not in JOB_STATUS.values():
         return 'Valid status: ' + concat_list_to_string(JOB_STATUS.values())
 
     return None
@@ -202,6 +214,14 @@ def validate_job_rate(data):
     return None
 
 
-def validate_request_cancellation(data):
+def format_price(price, clean=False):
+    if clean:
+        return price.replace(',', '')
+
+    locale.setlocale(locale.LC_ALL, '')
+    return locale.currency(price, grouping=True)
+
+
+def validate_job_requests(data):
     expected_params = ['job_id', 'student_id']
     return validate_expected_param(expected_params, data)

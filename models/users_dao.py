@@ -135,15 +135,8 @@ class UserDao(MainDao):
         else:
             user_info = user_info + (None, None, None)
 
-        query = 'select AVG(value) from rates where user_id=%s;'
-        cursor.execute(query, (user['user_id'], ))
-        rate = cursor.fetchone()[0]
-        if rate is None:
-            user_info = user_info + (None, )
-        else:
-            rate_value = float(rate)
-            format_number = int(rate_value) if rate_value.is_integer() else format(rate_value, ".2f")
-            user_info = user_info + (format_number, )
+        rate = self.get_user_ratings(user['user_id'], cursor)
+        user_info = user_info + (rate, )
 
         return user_info, None
 

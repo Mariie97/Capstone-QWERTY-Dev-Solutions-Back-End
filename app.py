@@ -11,7 +11,8 @@ from controllers.jobs_controller import JobController
 from controllers.users_controller import UserController
 from utilities import validate_user_info, validate_login_data, STATUS_CODE, SUPERUSER_ACCOUNT, \
     CLIENT_ACCOUNT, STUDENT_ACCOUNT, validate_password_info, validate_email, upload_image_aws, validate_profile_data, \
-    validate_assign_job_data, validate_job_rate, validate_job_status, validate_create_job, validate_request_cancellation
+    validate_assign_job_data, validate_job_rate, validate_job_status, validate_create_job, \
+    validate_job_requests, format_price
 
 app = Flask(__name__)
 
@@ -125,10 +126,21 @@ def change_password():
             return jsonify(error_msg), STATUS_CODE['bad_request']
 
 
+@app.route('/api/request_job', methods=['POST'])
+@jwt_required()
+def add_job_request():
+    error_msg = validate_job_requests(request.json)
+    if error_msg is not None:
+        return jsonify(error_msg), STATUS_CODE['bad_request']
+
+    data = request.json
+    return JobController().add_job_request(data)
+
+
 @app.route('/api/cancel_request', methods=['PUT'])
 @jwt_required()
 def cancel_job_request():
-    error_msg = validate_request_cancellation(request.json)
+    error_msg = validate_job_requests(request.json)
     if error_msg is not None:
         return jsonify(error_msg), STATUS_CODE['bad_request']
 
@@ -202,6 +214,10 @@ def create_job():
         return jsonify(error_msg), STATUS_CODE['bad_request']
 
     data = request.json
+    data.update({
+        'price': format_price(str(data['price']), True)
+    })
+
     return JobController().create_job(data)
 
 
@@ -212,7 +228,7 @@ def delete_user(user_id):
     return UserController().delete_user(data)
 
 
-@app.route('/api/job/<int:job_id>', methods=['PUT'])
+@app.route('/api/job_status/<int:job_id>', methods=['PUT'])
 @jwt_required()
 def change_job_status(job_id):
     error_msg = validate_job_status(request.json)

@@ -47,6 +47,20 @@ class JobDao(MainDao):
             cursor.execute(query, (job_id, WEEK_DAYS['sabado']))
 
     @exception_handler
+    def add_job_request(self, data):
+        cursor = self.conn.cursor()
+        query = 'insert into requests (job_id, student_id) values (%s, %s) returning job_id, student_id, date, state;'
+        cursor.execute(query, (data['job_id'], data['student_id']))
+        request = cursor.fetchone()
+        self.conn.commit()
+        return request, None
+
+    @staticmethod
+    def close_job_requests(cursor, job_id):
+        query = 'update requests set state = %s where job_id=%s and state=%s;'
+        cursor.execute(query, (JOB_REQUESTS_STATE['closed'], job_id, JOB_REQUESTS_STATE['open']))
+
+    @exception_handler
     def cancel_job_request(self, data):
         cursor = self.conn.cursor()
         query = 'update requests set state = %s where job_id=%s and student_id=%s and state=%s;'
@@ -93,9 +107,7 @@ class JobDao(MainDao):
             if cursor.rowcount == 0:
                 return False, None
 
-            query = 'update requests set state = %s where job_id=%s;'
-            cursor.execute(query, (JOB_REQUESTS_STATE['closed'], data['job_id']))
-
+            self.close_job_requests(cursor,  data['job_id'])
             if cursor.rowcount == 0:
                 return False, None
 
@@ -108,19 +120,21 @@ class JobDao(MainDao):
 
     @exception_handler
     def get_job_details(self, data):
+        # TODO: This must be able to return all job without considering the status?
         cursor = self.conn.cursor()
         query = 'select owner_id, student_id, title, description, price, categories, status, date_posted, pdf, ' \
-                'street, city, zipcode, O.first_name, O.last_name, O.image ' \
+                'street, city, zipcode, O.first_name, O.last_name, O.image, O.cancellations ' \
                 'from jobs as J ' \
                 'inner join users as O on J.owner_id=O.user_id ' \
-                'inner join address as A on A.address_id=O.address_id ' \
-                'where job_id=%s;'
+                'inner join address as A on A.address_id=J.address_id ' \
+                'where job_id=%s'
         cursor.execute(query, (data['job_id'], ))
         details = cursor.fetchone()
         if details is None:
             return None, None
 
-        if details[1] is not None:
+        student_id = details[1]
+        if student_id is not None:
             query = 'select first_name, last_name ' \
                     'from users ' \
                     'where user_id=%s;'
@@ -129,10 +143,22 @@ class JobDao(MainDao):
 
         query = 'select weekday ' \
                 'from days ' \
-                'where job_id=%s;'
+                'where job_id=%s ' \
+                'order by weekday asc;'
         cursor.execute(query, (data['job_id'], ))
         days = [row[0] for row in cursor.fetchall()]
-        details = (details, days)
+
+        query = 'select student_id, state ' \
+                'from requests ' \
+                'where job_id=%s ' \
+                'order by student_id asc;'
+        cursor.execute(query, (data['job_id'], ))
+        requests = self.convert_to_list(cursor)
+
+        owner_id = details[0]
+        owner_rating = self.get_user_ratings(owner_id, cursor)
+
+        details = (details, days, requests, owner_rating)
 
         return details, None
 
@@ -153,15 +179,32 @@ class JobDao(MainDao):
     @exception_handler
     def set_job_status(self, data):
         cursor = self.conn.cursor()
-        query = 'update jobs set status = %s where job_id=%s  returning student_id;'
+        query = 'update jobs set status = %s where job_id=%s  returning student_id, owner_id;'
         cursor.execute(query, (data['status'], data['job_id']))
         if cursor.rowcount == 0:
             return None, None
 
-        student_id = cursor.fetchone()[0]
-        if data['status'] == JOB_STATUS['posted'] and student_id is not None:
+        student_id, owner_id = cursor.fetchone()
+
+        status = str(data['status'])
+        # Student cancel the job
+        if status == JOB_STATUS['posted'] and student_id is not None:
             query = 'update jobs set student_id = null where job_id=%s;'
             cursor.execute(query, (data['job_id'], ))
+
+            query = 'update users set cancellations=cancellations + 1 where user_id=%s'
+            cursor.execute(query, (student_id, ))
+
+        # Job's owner cancel the job
+        elif status == JOB_STATUS['cancelled']:
+            query = 'update users set cancellations=cancellations + 1 where user_id=%s'
+            cursor.execute(query, (owner_id,))
+
+            self.close_job_requests(cursor, data['job_id'])
+
+        # Admin delete the job
+        elif status == JOB_STATUS['deleted']:
+            self.close_job_requests(cursor, data['job_id'])
 
         self.conn.commit()
         return True, None

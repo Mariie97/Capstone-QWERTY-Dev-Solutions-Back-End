@@ -1,7 +1,7 @@
 from flask import jsonify
 
 from models.jobs_dao import JobDao
-from utilities import STATUS_CODE, format_date, generate_profile_pic_url
+from utilities import STATUS_CODE, format_date, generate_profile_pic_url, JOB_CATEGORIES, format_price
 
 
 class JobController:
@@ -15,7 +15,7 @@ class JobController:
             'owner_id': data[1],
             'title': data[2],
             'description': data[3],
-            'price': data[4],
+            'price': format_price(data[4]),
             'category': data[5]
         }
 
@@ -25,6 +25,20 @@ class JobController:
             return jsonify(error_msg), STATUS_CODE['bad_request']
 
         return jsonify(self.job_creation_dict(job)), STATUS_CODE['created']
+
+    def add_job_request(self, data):
+        request, error_msg = self.dao.add_job_request(data)
+        if error_msg is not None:
+            return jsonify(error_msg), STATUS_CODE['bad_request']
+
+        dict = {
+            'job_id': request[0],
+            'student_id': request[1],
+            'date': request[2],
+            'state': request[3],
+        }
+
+        return jsonify(dict), STATUS_CODE['ok']
 
     def cancel_job_request(self, data):
         updated, error_msg = self.dao.cancel_job_request(data)
@@ -65,7 +79,7 @@ class JobController:
                 request = {
                     'job_id': row[0],
                     'title': row[1],
-                    'price': row[2],
+                    'price':  format_price(row[2]),
                     'categories': row[3],
                     'date': row[4],
                 }
@@ -96,8 +110,8 @@ class JobController:
             'student_id': details[0][1],
             'title': details[0][2],
             'description': details[0][3],
-            'price': details[0][4],
-            'categories': details[0][5],
+            'price':  format_price(details[0][4]),
+            'categories': JOB_CATEGORIES[details[0][5]],
             'status': details[0][6],
             'date_posted': format_date(details[0][7]),
             'pdf': details[0][8],
@@ -107,9 +121,12 @@ class JobController:
             'owner_name': details[0][12],
             'owner_last': details[0][13],
             'owner_image': details[0][14] if details[0][14] is None else generate_profile_pic_url(details[0][14]),
-            'student_name': details[0][15] if details[0][1] is not None else None,
-            'student_last': details[0][16] if details[0][1] is not None else None,
+            'owner_cancellations': details[0][15],
+            'student_name': details[0][16] if details[0][1] is not None else None,
+            'student_last': details[0][17] if details[0][1] is not None else None,
             'days': details[1],
+            'users_requested': details[2],
+            'owner_rating': details[3],
         }
 
         return jsonify(details_dict), STATUS_CODE['ok']
@@ -128,7 +145,7 @@ class JobController:
             job = {
                 'job_id': row[0],
                 'title': row[1],
-                'price': row[2],
+                'price':  format_price(row[2]),
                 'categories': row[3],
                 'date_posted': format_date(row[4]),
             }
