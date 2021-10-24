@@ -72,6 +72,7 @@ class JobDao(MainDao):
         self.conn.commit()
         return True, None
 
+    @exception_handler
     def get_requests_list(self, data):
         cursor = self.conn.cursor()
         query = 'select user_id, first_name, last_name, image, date ' \
@@ -82,10 +83,11 @@ class JobDao(MainDao):
         cursor.execute(query, (data['job_id'], ))
         requests_list = self.convert_to_list(cursor)
         if len(requests_list) == 0:
-            return None
-        else:
-            return requests_list
+            return None, None
 
+        return requests_list, None
+
+    @exception_handler
     def get_student_requests_list(self, data):
         cursor = self.conn.cursor()
         query = 'select R.job_id, title, price, categories, date ' \
@@ -95,28 +97,24 @@ class JobDao(MainDao):
         cursor.execute(query, (data['student_id'], JOB_REQUESTS_STATE['open']))
         requests_list = self.convert_to_list(cursor)
         if len(requests_list) == 0:
-            return None
-        else:
-            return requests_list
+            return None, None
 
+        return requests_list, None
+
+    @exception_handler
     def set_job_worker(self, data):
-        try:
-            cursor = self.conn.cursor()
-            query = 'update jobs set student_id = %s, status = %s  where job_id=%s;'
-            cursor.execute(query, (data['student_id'], JOB_STATUS['in_process'], data['job_id']))
-            if cursor.rowcount == 0:
-                return False, None
+        cursor = self.conn.cursor()
+        query = 'update jobs set student_id = %s, status = %s  where job_id=%s;'
+        cursor.execute(query, (data['student_id'], JOB_STATUS['in_process'], data['job_id']))
+        if cursor.rowcount == 0:
+            return None, None
 
-            self.close_job_requests(cursor,  data['job_id'])
-            if cursor.rowcount == 0:
-                return False, None
+        self.close_job_requests(cursor,  data['job_id'])
+        if cursor.rowcount == 0:
+            return None, None
 
-            self.conn.commit()
-            return True, None
-        except (Exception, DatabaseError) as error:
-            return None, error.pgerror
-        finally:
-            self.conn.close()
+        self.conn.commit()
+        return True, None
 
     @exception_handler
     def get_job_details(self, data):

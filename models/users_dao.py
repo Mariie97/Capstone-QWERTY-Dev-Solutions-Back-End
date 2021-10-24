@@ -4,6 +4,7 @@ from models.main_dao import MainDao
 
 class UserDao(MainDao):
 
+    @exception_handler
     def create_user(self, data):
         cursor = self.conn.cursor()
         query = 'insert into users (first_name, last_name, password, email, type) values (%s, %s, ' \
@@ -11,15 +12,15 @@ class UserDao(MainDao):
         cursor.execute(query, (data['first_name'].capitalize(), data['last_name'].capitalize(), data['password'],
                                data['email'], data['type']))
         user_info = cursor.fetchone()
-        self.conn.commit()
 
         query = 'insert into questions (user_id, type, answer) values (%s, %s, %s)'
         cursor.execute(query, (user_info[0], data['q_type1'], data['ans1']))
         cursor.execute(query, (user_info[0], data['q_type2'], data['ans2']))
+
         self.conn.commit()
+        return user_info, None
 
-        return user_info
-
+    @exception_handler
     def login_user(self, credentials):
         cursor = self.conn.cursor()
         query = 'select user_id, type ' \
@@ -27,8 +28,12 @@ class UserDao(MainDao):
                 'where email=%s and password=crypt(%s, password) and deleted=false;'
         cursor.execute(query, (credentials['email'], credentials['password']))
         result = cursor.fetchone()
-        return result
+        if result is None:
+            return None, None
 
+        return result, None
+
+    @exception_handler
     def edit_user(self, data):
         cursor = self.conn.cursor()
         if data['image_key'] is not None:
@@ -48,9 +53,9 @@ class UserDao(MainDao):
 
         user_info = cursor.fetchone()
         if user_info is None:
-            return None
-        else:
+            return None, None
 
+        else:
             if data['street'] is not None and data['city'] is not None and data['zipcode'] is not None:
 
                 if user_info[0] is None:
@@ -76,6 +81,7 @@ class UserDao(MainDao):
             self.conn.commit()
             return user_info, None
 
+    @exception_handler
     def get_all_users(self, data):
         cursor = self.conn.cursor()
         query = 'select user_id, first_name, last_name, email ' \
@@ -84,8 +90,12 @@ class UserDao(MainDao):
                 'order by first_name;'
         cursor.execute(query, (data['type'], ))
         results = self.convert_to_list(cursor)
-        return results
+        if len(results) == 0:
+            return None, None
 
+        return results, None
+
+    @exception_handler
     def retrieve_questions(self, user_email):
         cursor = self.conn.cursor()
         query = 'select type, answer ' \
@@ -93,15 +103,16 @@ class UserDao(MainDao):
         cursor.execute(query, (user_email['email'],))
 
         if cursor.rowcount == 0:
-            return None
+            return None, None
 
         questions = cursor.fetchall()
         question1, answer1 = questions[0]
         question2, answer2 = questions[1]
         security = [question1, question2, answer1, answer2]
 
-        return security
+        return security, None
 
+    @exception_handler
     def change_password(self, user_email):
         cursor = self.conn.cursor()
         query = 'update users set password = crypt(%s, gen_salt(\'bf\')) where email=%s and deleted=false ' \
@@ -109,10 +120,10 @@ class UserDao(MainDao):
         cursor.execute(query, (user_email['password'], user_email['email']))
         info = cursor.fetchone()
         if info is None:
-            return None
-        self.conn.commit()
+            return None, None
 
-        return info
+        self.conn.commit()
+        return info, None
 
     @exception_handler
     def get_user_info(self, user):
@@ -143,7 +154,7 @@ class UserDao(MainDao):
     @exception_handler
     def delete_user(self, data):
         cursor = self.conn.cursor()
-        query = 'update users set deleted=true where user_id=%s;'
+        query = 'update users set deleted=true where user_id=%s and deleted=false;'
         cursor.execute(query, (data['user_id'], ))
         if cursor.rowcount == 0:
             return False, None

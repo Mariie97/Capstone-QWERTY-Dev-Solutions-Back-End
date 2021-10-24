@@ -73,17 +73,14 @@ def create_user():
         return jsonify(error_msg), STATUS_CODE['bad_request']
 
 
-@app.route('/api/users', methods=['GET'])
+@app.route('/api/users/<int:account_type>', methods=['GET'])
 @jwt_required()
-def get_users():
-    if request.json is None or 'type' not in request.json:
-        return jsonify('The following parameter is required: type'), STATUS_CODE['bad_request']
-
-    if request.json['type'] not in [STUDENT_ACCOUNT, CLIENT_ACCOUNT, SUPERUSER_ACCOUNT]:
+def get_users(account_type):
+    if account_type not in [STUDENT_ACCOUNT, CLIENT_ACCOUNT, SUPERUSER_ACCOUNT]:
         return jsonify('Valid type: %s, %s, and %s' % (STUDENT_ACCOUNT, CLIENT_ACCOUNT, SUPERUSER_ACCOUNT)), \
-               STATUS_CODE['bad_request']
+           STATUS_CODE['bad_request']
 
-    data = request.json
+    data = {'type': account_type}
     return UserController().get_all_users(data)
 
 
@@ -149,7 +146,7 @@ def cancel_job_request():
     return JobController().cancel_job_request(data)
 
 
-@app.route('/api/job_requests', methods=['GET'])
+@app.route('/api/job_requests/<int:job_id>', methods=['GET'])
 @jwt_required()
 def job_requests_list():
     if request.json is None or 'job_id' not in request.json:
