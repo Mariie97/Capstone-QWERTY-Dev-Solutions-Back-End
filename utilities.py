@@ -1,9 +1,9 @@
+import io
 import locale
 import os
 import re
-
 import boto3
-from werkzeug.utils import secure_filename
+
 from config.config import AWS_BUCKET_NAME, AWS_URL_EXPIRE_SECONDS, AWS_UPLOAD_FOLDER, AWS_ACCESS_KEY_ID, \
     AWS_SECRET_ACCESS_KEY, AWS_REGION
 
@@ -171,13 +171,14 @@ def upload_image_aws(user_id, image_file):
                                  aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
                                  region_name=AWS_REGION,
                                  )
-        if not os.path.exists(AWS_UPLOAD_FOLDER):
-            os.makedirs(AWS_UPLOAD_FOLDER)
 
+        buffer = io.BytesIO()
+        image_file.save(buffer)
+        buffer.seek(0)
         file_name = 'profile_pic_{user_id}.{type}'.format(user_id=user_id, type=image_file.content_type.split('/')[-1])
-        image_file.save(os.path.join(AWS_UPLOAD_FOLDER, secure_filename(file_name)))
-        bucket_file_name = f"{AWS_UPLOAD_FOLDER}/{file_name}"
-        s3_client.upload_file(bucket_file_name, AWS_BUCKET_NAME, bucket_file_name)
+        bucket_key = f"{AWS_UPLOAD_FOLDER}/{file_name}"
+        s3_client.put_object(Body=buffer, Bucket=AWS_BUCKET_NAME, Key=bucket_key)
+        buffer.close()
         return file_name
     except Exception as e:
         return None
