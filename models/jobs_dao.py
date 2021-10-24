@@ -164,34 +164,51 @@ class JobDao(MainDao):
 
     @exception_handler
     def get_job_list_by_status(self, data):
-        cursor = self.conn.cursor()
         filters = ''
+        limit = ''
         params = [data['status']]
-        if 'month' in data and 'year' in data:
-            filters = 'and date_part(\'month\', date_posted)=%s and date_part(\'year\', date_posted)=%s '
-            params.append(data['month'])
-            params.append(data['year'])
 
-        elif 'month' in data:
+        if 'month' in data:
             filters = 'and date_part(\'month\', date_posted)=%s '
             params.append(data['month'])
 
-        elif 'year' in data:
-            filters = 'and date_part(\'year\', date_posted)=%s '
+        if 'year' in data:
+            filters = filters + 'and date_part(\'year\', date_posted)=%s '
             params.append(data['year'])
 
-        query = 'select job_id, title, price, categories, date_posted ' \
-                'from jobs ' \
+        if 'category' in data:
+            filters = filters + 'and categories=%s '
+            params.append(data['category'])
+
+        if 'city' in data:
+            filters = filters + 'and city=%s '
+            params.append(data['city'])
+
+        if 'minPrice' in data:
+            filters = filters + 'and price>=%s '
+            params.append(data['minPrice'])
+
+        if 'maxPrice' in data:
+            filters = filters + 'and price<=%s '
+            params.append(data['maxPrice'])
+
+        if 'limit' in data:
+            limit = 'limit %s'
+            params.append(data['limit'])
+
+        cursor = self.conn.cursor()
+        query = 'select job_id, title, price, categories, date_posted, city ' \
+                'from jobs natural inner join address ' \
                 'where status=%s {filters}' \
                 'order by date_posted desc ' \
-                '{limit};'.format(filters=filters, limit='limit 10' if len(params) == 1 else '')
+                '{limit};'.format(filters=filters, limit=limit)
         cursor.execute(query, params)
 
         requests_list = self.convert_to_list(cursor)
         if len(requests_list) == 0:
             return None, None
-        else:
-            return requests_list, None
+
+        return requests_list, None
 
     @exception_handler
     def set_job_status(self, data):
