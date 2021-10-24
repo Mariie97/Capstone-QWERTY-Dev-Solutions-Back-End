@@ -28,24 +28,28 @@ class UserController:
         }
 
     def create_user(self, user_info):
-        try:
-            user = self.dao.create_user(user_info)
-            return jsonify(self.build_attr_dict(user)), STATUS_CODE['created']
-        except IntegrityError as e:
-            return jsonify(e.pgerror), STATUS_CODE['bad_request']
+        user, error_msg = self.dao.create_user(user_info)
+        if error_msg is not None:
+            return jsonify(error_msg), STATUS_CODE['bad_request']
+
+        return jsonify(self.build_attr_dict(user)), STATUS_CODE['created']
 
     def login_user(self, credentials):
-        user = self.dao.login_user(credentials)
-        if user:
-            dict = {
-                'user_id': user[0],
-                'type': user[1],
-            }
-            return jsonify(dict), STATUS_CODE['ok']
-        else:
+        user, error_msg = self.dao.login_user(credentials)
+        if error_msg is not None:
+            return jsonify(error_msg), STATUS_CODE['bad_request']
+
+        if user is None:
             return jsonify("Invalid credentials"), STATUS_CODE['unauthorized']
 
-    def get_user_info_dict(self, data):
+        dict = {
+            'user_id': user[0],
+            'type': user[1],
+        }
+        return jsonify(dict), STATUS_CODE['ok']
+
+    @staticmethod
+    def get_user_info_dict(data):
         return {
             'first_name': data[0],
             'last_name': data[1],
@@ -61,7 +65,13 @@ class UserController:
         }
 
     def get_all_users(self, data):
-        users = self.dao.get_all_users(data)
+        users, error_msg = self.dao.get_all_users(data)
+        if error_msg is not None:
+            return jsonify(error_msg), STATUS_CODE['bad_request']
+
+        if users is None:
+            return jsonify('No users found'), STATUS_CODE['not_found']
+
         result_list = []
         for row in users:
             obj = {
@@ -79,36 +89,36 @@ class UserController:
                 data[param] = None
 
     def retrieve_questions(self, user_email):
-        try:
-            user = self.dao.retrieve_questions(user_email)
-            if user is None:
-                return jsonify("User not found"), STATUS_CODE['not_found']
-            else:
-                return jsonify(self.security_questions_dict(user)), STATUS_CODE['ok']
-        except IntegrityError as e:
-            return jsonify(e.pgerror), STATUS_CODE['bad_request']
+        user, error_msg = self.dao.retrieve_questions(user_email)
+        if error_msg is not None:
+            return jsonify(error_msg), STATUS_CODE['bad_request']
+
+        if user is None:
+            return jsonify("User not found"), STATUS_CODE['not_found']
+
+        return jsonify(self.security_questions_dict(user)), STATUS_CODE['ok']
 
     def edit_user(self, user_info):
-        try:
-            self.clean_data(user_info)
-            user, error_msg = self.dao.edit_user(user_info)
-            if user is None:
-                return jsonify('There is not user with id={id}'.format(id=user_info['user_id'])), \
-                       STATUS_CODE['not_found']
-            else:
-                return jsonify("User ({id}) edited successfully!".format(id=user_info['user_id'])), STATUS_CODE['ok']
-        except IntegrityError as e:
-            return jsonify(e.pgerror), STATUS_CODE['bad_request']
+        self.clean_data(user_info)
+        user, error_msg = self.dao.edit_user(user_info)
+        if error_msg is not None:
+            return jsonify(error_msg), STATUS_CODE['bad_request']
+
+        if user is None:
+            return jsonify('There is not user with id={id}'.format(id=user_info['user_id'])), \
+                   STATUS_CODE['not_found']
+
+        return jsonify("User ({id}) edited successfully!".format(id=user_info['user_id'])), STATUS_CODE['ok']
 
     def change_password(self, user_email):
-        try:
-            user = self.dao.change_password(user_email)
-            if user is None:
-                return jsonify("User not found"), STATUS_CODE['not_found']
-            else:
-                return jsonify({'email': user[0], 'password': user[1]}), STATUS_CODE['ok']
-        except IntegrityError as e:
-            return jsonify(e.pgerror), STATUS_CODE['bad_request']
+        user, error_msg = self.dao.change_password(user_email)
+        if error_msg is not None:
+            return jsonify(error_msg), STATUS_CODE['bad_request']
+
+        if user is None:
+            return jsonify("User not found"), STATUS_CODE['not_found']
+
+        return jsonify({'email': user[0], 'password': user[1]}), STATUS_CODE['ok']
 
     def get_user_info(self, userid):
         user, error_msg = self.dao.get_user_info(userid)

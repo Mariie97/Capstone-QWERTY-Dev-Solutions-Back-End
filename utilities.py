@@ -7,14 +7,14 @@ import boto3
 from config.config import AWS_BUCKET_NAME, AWS_URL_EXPIRE_SECONDS, AWS_UPLOAD_FOLDER, AWS_ACCESS_KEY_ID, \
     AWS_SECRET_ACCESS_KEY, AWS_REGION
 
-STUDENT_ACCOUNT = '1'
-CLIENT_ACCOUNT = '2'
-SUPERUSER_ACCOUNT = '3'
+STUDENT_ACCOUNT = 1
+CLIENT_ACCOUNT = 2
+SUPERUSER_ACCOUNT = 3
 
 account_type = {
-    'student': '1',
-    'client': '2',
-    'superuser': '3',
+    'student': STUDENT_ACCOUNT,
+    'client': CLIENT_ACCOUNT,
+    'superuser': SUPERUSER_ACCOUNT,
 }
 
 JOB_REQUESTS_STATE = {
@@ -99,7 +99,7 @@ def validate_user_info(data):
     if error is not None:
         return error
 
-    if data['type'] == account_type['student'] and re.match(r'^.+@upr\.edu$', data['email']) is None:
+    if int(data['type']) == account_type['student'] and re.match(r'^.+@upr\.edu$', data['email']) is None:
         return 'A upr email is needed to register as student'
 
     if validate_email(data['email']) is None:
