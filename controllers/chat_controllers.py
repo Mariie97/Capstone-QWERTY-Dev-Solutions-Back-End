@@ -1,7 +1,7 @@
 from flask import jsonify
 
 from models.chat_dao import ChatDao
-from utilities import STATUS_CODE, format_date
+from utilities import STATUS_CODE, format_date, generate_profile_pic_url
 
 
 class ChatController:
@@ -42,8 +42,7 @@ class ChatController:
             dict.update({
                 'sender_name': row[6],
                 'sender_last': row[7],
-                'receiver_name': row[8],
-                'receiver_last': row[9],
+                'sender_image': generate_profile_pic_url(row[8]) if row[8] is not None else None,
             })
             list.append(dict)
 

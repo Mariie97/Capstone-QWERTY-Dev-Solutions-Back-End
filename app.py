@@ -261,6 +261,7 @@ def rate_job(job_id):
 
 
 @app.route('/api/add_message', methods=['POST'])
+@jwt_required()
 def add_message():
     error_msg = validate_message_data(request.json)
     if error_msg is not None:
@@ -271,8 +272,15 @@ def add_message():
 
 
 @app.route('/api/retrieve_messages/<int:job_id>', methods=['GET'])
+@jwt_required()
 def retrieve_chat_messages(job_id):
-    data = {'job_id': job_id}
+    if 'user_id' not in request.args:
+        return jsonify("Need to specify the user_id"), STATUS_CODE['bad_request']
+
+    data = {
+        'job_id': job_id,
+        'user_id': request.args['user_id']
+    }
     return ChatController().get_job_messages(data)
 
 

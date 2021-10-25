@@ -17,15 +17,15 @@ class ChatDao(MainDao):
     @exception_handler
     def get_job_messages(self, data):
         cursor = self.conn.cursor()
-        query = 'select msg_id, sender_id, receiver_id, job_id, content, date, S.first_name, S.last_name, ' \
-                'R.first_name, R.last_name ' \
+        query = 'select msg_id, sender_id, receiver_id, job_id, content, date, S.first_name, S.last_name, S.image, ' \
+                'R.first_name, R.last_name, R.image ' \
                 'from messages as M' \
                 '   inner join users as S on M.sender_id=S.user_id ' \
                 '   inner join users as R on M.receiver_id=R.user_id ' \
-                'where job_id=%s ' \
+                'where job_id=%s and (sender_id=%s or receiver_id=%s)' \
                 'order by date asc;'
 
-        cursor.execute(query, (data['job_id'], ))
+        cursor.execute(query, (data['job_id'], data['user_id'], data['user_id']))
         messages = self.convert_to_list(cursor)
         if len(messages) == 0:
             return None, None
