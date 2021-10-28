@@ -166,6 +166,10 @@ class JobDao(MainDao):
         limit = ''
         params = [data['status']]
 
+        if 'owner_id' in data:
+            filters = 'and owner_id=%s '
+            params.append(data['owner_id'])
+
         if 'month' in data:
             filters = 'and date_part(\'month\', date_posted)=%s '
             params.append(data['month'])
