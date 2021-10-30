@@ -88,7 +88,7 @@ class JobController:
                 'job_id': row[0],
                 'title': row[1],
                 'price':  format_price(row[2]),
-                'categories': row[3],
+                'categories': JOB_CATEGORIES[row[3]],
                 'date': row[4],
             }
             list.append(request)
