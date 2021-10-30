@@ -148,21 +148,15 @@ def cancel_job_request():
 
 @app.route('/api/job_requests/<int:job_id>', methods=['GET'])
 @jwt_required()
-def job_requests_list():
-    if request.json is None or 'job_id' not in request.json:
-        return jsonify('The following parameter is required: job_id'), STATUS_CODE['bad_request']
-
-    data = request.json
+def job_requests_list(job_id):
+    data = {'job_id': job_id}
     return JobController().get_requests_list(data)
 
 
-@app.route('/api/student_requests', methods=['GET'])
+@app.route('/api/student_requests/<int:student_id>', methods=['GET'])
 @jwt_required()
-def student_requests_list():
-    if request.json is None or 'student_id' not in request.json:
-        return jsonify('The following parameter is required: student_id'), STATUS_CODE['bad_request']
-
-    data = request.json
+def student_requests_list(student_id):
+    data = {'student_id': student_id}
     return JobController().get_student_requests_list(data)
 
 

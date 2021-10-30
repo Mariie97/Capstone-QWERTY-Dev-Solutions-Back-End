@@ -68,7 +68,7 @@ class JobController:
                 'user_id': row[0],
                 'first_name': row[1],
                 'last_name': row[2],
-                'image': row[3],
+                'image': generate_profile_pic_url(row[3]),
                 'date': row[4],
             }
             list.append(request)
@@ -154,7 +154,7 @@ class JobController:
                 'job_id': row[0],
                 'title': row[1],
                 'price':  format_price(row[2]),
-                'categories': row[3],
+                'categories': JOB_CATEGORIES[row[3]],
                 'date_posted': format_date(row[4]),
                 'city': row[5]
             }

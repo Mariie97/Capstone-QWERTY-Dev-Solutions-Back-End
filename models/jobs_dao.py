@@ -109,7 +109,7 @@ class JobDao(MainDao):
         if cursor.rowcount == 0:
             return None, None
 
-        self.close_job_requests(cursor,  data['job_id'])
+        self.close_job_requests(cursor, data['job_id'])
         if cursor.rowcount == 0:
             return None, None
 
