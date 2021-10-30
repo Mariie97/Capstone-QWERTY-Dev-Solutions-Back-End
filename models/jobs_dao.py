@@ -74,13 +74,20 @@ class JobDao(MainDao):
 
     @exception_handler
     def get_requests_list(self, data):
+        filters = ''
+        params = [data['job_id']]
+
+        if 'state' in data:
+            filters = 'and state=%s '
+            params.append(data['state'])
+
         cursor = self.conn.cursor()
         query = 'select user_id, first_name, last_name, image, date ' \
                 'from requests as R inner join users as U on R.student_id=U.user_id ' \
-                'where job_id=%s ' \
-                'order by date asc;'
+                'where job_id=%s {filters}' \
+                'order by date asc;'.format(filters=filters)
 
-        cursor.execute(query, (data['job_id'], ))
+        cursor.execute(query, params)
         requests_list = self.convert_to_list(cursor)
         if len(requests_list) == 0:
             return None, None

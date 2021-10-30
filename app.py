@@ -150,6 +150,11 @@ def cancel_job_request():
 @jwt_required()
 def job_requests_list(job_id):
     data = {'job_id': job_id}
+    if request.args is not None:
+        for key, value in request.args.items():
+            data.update({
+                key: value
+            })
     return JobController().get_requests_list(data)
 
 
