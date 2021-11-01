@@ -156,7 +156,11 @@ class JobController:
                 'price':  format_price(row[2]),
                 'categories': JOB_CATEGORIES[row[3]],
                 'date_posted': format_date(row[4]),
-                'city': row[5]
+                'city': row[5],
+                'owner_id': row[6],
+                'owner_first': row[7],
+                'owner_last': row[8],
+
             }
             results.append(job)
 
