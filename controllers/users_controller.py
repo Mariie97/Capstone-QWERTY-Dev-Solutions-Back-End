@@ -79,6 +79,7 @@ class UserController:
                 'first_name': row[1],
                 'last_name': row[2],
                 'email': row[3],
+                'type': row[4],
             }
             result_list.append(obj)
         return jsonify(result_list), STATUS_CODE['ok']

@@ -83,12 +83,18 @@ class UserDao(MainDao):
 
     @exception_handler
     def get_all_users(self, data):
+        filters = ''
+        params = [data['deleted']]
+        if 'type' in data:
+            filters = 'and type=%s '
+            params.append(data['type'])
+
         cursor = self.conn.cursor()
-        query = 'select user_id, first_name, last_name, email ' \
+        query = 'select user_id, first_name, last_name, email, type ' \
                 'from users ' \
-                'where type=%s and deleted=false ' \
-                'order by first_name;'
-        cursor.execute(query, (data['type'], ))
+                'where deleted=%s {filters}' \
+                'order by first_name;'.format(filters=filters)
+        cursor.execute(query, params)
         results = self.convert_to_list(cursor)
         if len(results) == 0:
             return None, None

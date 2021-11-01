@@ -73,14 +73,21 @@ def create_user():
         return jsonify(error_msg), STATUS_CODE['bad_request']
 
 
-@app.route('/api/users/<int:account_type>', methods=['GET'])
+@app.route('/api/users', methods=['GET'])
 @jwt_required()
-def get_users(account_type):
-    if account_type not in [STUDENT_ACCOUNT, CLIENT_ACCOUNT, SUPERUSER_ACCOUNT]:
-        return jsonify('Valid type: %s, %s, and %s' % (STUDENT_ACCOUNT, CLIENT_ACCOUNT, SUPERUSER_ACCOUNT)), \
-           STATUS_CODE['bad_request']
+def get_users():
+    data = {'deleted': False}
 
-    data = {'type': account_type}
+    if 'account_type' in request.args:
+        if int(request.args['account_type']) not in [STUDENT_ACCOUNT, CLIENT_ACCOUNT, SUPERUSER_ACCOUNT]:
+            return jsonify('Valid type: %s, %s, and %s' % (STUDENT_ACCOUNT, CLIENT_ACCOUNT, SUPERUSER_ACCOUNT)), \
+                   STATUS_CODE['bad_request']
+
+        data.update({'type': request.args['account_type']})
+
+    if 'deleted' in request.args:
+        data.update({'deleted': True})
+
     return UserController().get_all_users(data)
 
 
@@ -159,7 +166,7 @@ def job_requests_list(job_id):
 
 
 @app.route('/api/student_requests/<int:student_id>', methods=['GET'])
-@jwt_required()
+# @jwt_required()
 def student_requests_list(student_id):
     data = {'student_id': student_id}
     return JobController().get_student_requests_list(data)
