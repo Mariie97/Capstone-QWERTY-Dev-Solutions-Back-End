@@ -204,7 +204,7 @@ def job_info(job_id):
 
 
 @app.route('/api/jobs_list/<int:status>', methods=['GET'])
-@jwt_required()
+# @jwt_required()
 def jobs_list(status):
     data = {'status': status}
     if request.args is not None:

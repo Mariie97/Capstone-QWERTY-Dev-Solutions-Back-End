@@ -160,7 +160,8 @@ class JobController:
                 'owner_id': row[6],
                 'owner_first': row[7],
                 'owner_last': row[8],
-
+                'street': row[9],
+                'zipcode': row[10],
             }
             results.append(job)
 

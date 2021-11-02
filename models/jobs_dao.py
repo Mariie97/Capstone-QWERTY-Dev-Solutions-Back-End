@@ -204,7 +204,8 @@ class JobDao(MainDao):
             params.append(data['limit'])
 
         cursor = self.conn.cursor()
-        query = 'select job_id, title, price, categories, date_posted, city, owner_id, first_name, last_name ' \
+        query = 'select job_id, title, price, categories, date_posted, city, owner_id, first_name, last_name, street, ' \
+                'zipcode ' \
                 'from jobs as J ' \
                 '   natural inner join address ' \
                 '   inner join users as U on U.user_id=J.owner_id ' \
