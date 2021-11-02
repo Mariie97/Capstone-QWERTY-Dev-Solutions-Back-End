@@ -23,14 +23,14 @@ JOB_REQUESTS_STATE = {
 }
 
 JOB_CATEGORIES = {
-    1: 'Animals',
-    2: 'Auto',
-    3: 'Education',
-    4: 'Events',
-    5: 'Home',
-    6: 'Self-care',
-    7: 'Shop',
-    8: 'Other',
+    1:  'Animals',
+    2:  'Auto',
+    3:  'Education',
+    4:  'Events',
+    5:  'Home',
+    6:  'Other',
+    7:  'Self-care',
+    8:  'Shop',
 }
 
 WEEK_DAYS = {
@@ -56,6 +56,7 @@ STATUS_CODE = {
     'created': 201,
     'bad_request': 400,
     'unauthorized': 401,
+    'forbidden': 403,
     'not_found': 404,
     'server_error': 500,
 }

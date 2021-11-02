@@ -1,3 +1,5 @@
+from psycopg2 import DatabaseError
+
 from decorators import exception_handler
 from models.main_dao import MainDao
 from utilities import JOB_REQUESTS_STATE, WEEK_DAYS, JOB_STATUS
@@ -72,20 +74,13 @@ class JobDao(MainDao):
 
     @exception_handler
     def get_requests_list(self, data):
-        filters = ''
-        params = [data['job_id']]
-
-        if 'state' in data:
-            filters = 'and state=%s '
-            params.append(data['state'])
-
         cursor = self.conn.cursor()
         query = 'select user_id, first_name, last_name, image, date ' \
                 'from requests as R inner join users as U on R.student_id=U.user_id ' \
-                'where job_id=%s {filters}' \
-                'order by date asc;'.format(filters=filters)
+                'where job_id=%s ' \
+                'order by date asc;'
 
-        cursor.execute(query, params)
+        cursor.execute(query, (data['job_id'], ))
         requests_list = self.convert_to_list(cursor)
         if len(requests_list) == 0:
             return None, None
@@ -114,7 +109,7 @@ class JobDao(MainDao):
         if cursor.rowcount == 0:
             return None, None
 
-        self.close_job_requests(cursor, data['job_id'])
+        self.close_job_requests(cursor,  data['job_id'])
         if cursor.rowcount == 0:
             return None, None
 
@@ -125,7 +120,7 @@ class JobDao(MainDao):
     def get_job_details(self, data):
         # TODO: This must be able to return all job without considering the status?
         cursor = self.conn.cursor()
-        query = 'select owner_id, student_id, title, description, price, categories, status, date_posted, pdf, ' \
+        query = 'select owner_id, student_id, title, description, price, categories, status, date_posted, ' \
                 'street, city, zipcode, O.first_name, O.last_name, O.image, O.cancellations ' \
                 'from jobs as J ' \
                 'inner join users as O on J.owner_id=O.user_id ' \
@@ -171,10 +166,6 @@ class JobDao(MainDao):
         limit = ''
         params = [data['status']]
 
-        if 'owner_id' in data:
-            filters = 'and owner_id=%s '
-            params.append(data['owner_id'])
-
         if 'month' in data:
             filters = 'and date_part(\'month\', date_posted)=%s '
             params.append(data['month'])
@@ -204,11 +195,8 @@ class JobDao(MainDao):
             params.append(data['limit'])
 
         cursor = self.conn.cursor()
-        query = 'select job_id, title, price, categories, date_posted, city, owner_id, first_name, last_name, street, ' \
-                'zipcode ' \
-                'from jobs as J ' \
-                '   natural inner join address ' \
-                '   inner join users as U on U.user_id=J.owner_id ' \
+        query = 'select job_id, title, price, categories, date_posted, city ' \
+                'from jobs natural inner join address ' \
                 'where status=%s {filters}' \
                 'order by date_posted desc ' \
                 '{limit};'.format(filters=filters, limit=limit)
@@ -233,7 +221,7 @@ class JobDao(MainDao):
         status = str(data['status'])
         # Student cancel the job
         if status == JOB_STATUS['posted'] and student_id is not None:
-            query = 'update jobs set student_id = null where job_id=%s;'
+            query = 'update jobs set student_id = null, pdf=null where job_id=%s;'
             cursor.execute(query, (data['job_id'], ))
 
             query = 'update users set cancellations=cancellations + 1 where user_id=%s'
@@ -275,3 +263,24 @@ class JobDao(MainDao):
         else:
             self.conn.commit()
         return True, None
+
+    @exception_handler
+    def save_contract(self, data):
+        cursor = self.conn.cursor()
+        query = 'update jobs set pdf = %s where job_id=%s;'
+        cursor.execute(query, (data['pdf'], data['job_id']))
+        self.conn.commit()
+        return True, None
+
+    @exception_handler
+    def get_contract(self, data):
+        cursor = self.conn.cursor()
+        query = 'select pdf, owner_id, student_id ' \
+                'from jobs ' \
+                'where job_id=%s;'
+        cursor.execute(query, (data['job_id'], ))
+        pdf = cursor.fetchone()
+        if pdf is None:
+            return None, None
+
+        return pdf, None

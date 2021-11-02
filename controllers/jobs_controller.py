@@ -1,6 +1,10 @@
-from flask import jsonify
+import base64
+from io import BytesIO
+
+from flask import jsonify, send_file
 
 from models.jobs_dao import JobDao
+from pdf_generator import AgreementContract
 from utilities import STATUS_CODE, format_date, generate_profile_pic_url, JOB_CATEGORIES, format_price
 
 
@@ -18,6 +22,31 @@ class JobController:
             'description': data[3],
             'price': format_price(data[4]),
             'category': data[5]
+        }
+
+    @staticmethod
+    def job_details_dict(details):
+        return {
+            'owner_id': details[0][0],
+            'student_id': details[0][1],
+            'title': details[0][2],
+            'description': details[0][3],
+            'price': format_price(details[0][4]),
+            'categories': JOB_CATEGORIES[details[0][5]],
+            'status': details[0][6],
+            'date_posted': format_date(details[0][7]),
+            'street': details[0][8],
+            'city': details[0][9],
+            'zipcode': details[0][10],
+            'owner_name': details[0][11],
+            'owner_last': details[0][12],
+            'owner_image': details[0][13] if details[0][13] is None else generate_profile_pic_url(details[0][13]),
+            'owner_cancellations': details[0][14],
+            'student_name': details[0][15] if details[0][1] is not None else None,
+            'student_last': details[0][16] if details[0][1] is not None else None,
+            'days': details[1],
+            'users_requested': details[2],
+            'owner_rating': details[3],
         }
 
     def create_job(self, data):
@@ -68,7 +97,7 @@ class JobController:
                 'user_id': row[0],
                 'first_name': row[1],
                 'last_name': row[2],
-                'image': generate_profile_pic_url(row[3]),
+                'image': row[3],
                 'date': row[4],
             }
             list.append(request)
@@ -88,7 +117,7 @@ class JobController:
                 'job_id': row[0],
                 'title': row[1],
                 'price':  format_price(row[2]),
-                'categories': JOB_CATEGORIES[row[3]],
+                'categories': row[3],
                 'date': row[4],
             }
             list.append(request)
@@ -103,6 +132,14 @@ class JobController:
             return jsonify("Job {job_id} or related requests for that job could not be found".format(
                 job_id=data['job_id'])),  STATUS_CODE['not_found']
 
+        job_info = self.job_details_dict(JobDao().get_job_details(data)[0])
+        pdf = AgreementContract(job_info).get_pdf()
+        contract_data = {
+            'job_id': data['job_id'],
+            'pdf': pdf,
+        }
+        JobDao().save_contract(contract_data)
+
         return jsonify("Job {job_id} updated successfully!".format(job_id=data['job_id'])), STATUS_CODE['ok']
 
     def get_job_details(self, data):
@@ -113,30 +150,7 @@ class JobController:
         if details is None:
             return jsonify("Job with id={job_id} not found".format(job_id=data['job_id'])), STATUS_CODE['not_found']
 
-        details_dict = {
-            'owner_id': details[0][0],
-            'student_id': details[0][1],
-            'title': details[0][2],
-            'description': details[0][3],
-            'price':  format_price(details[0][4]),
-            'categories': JOB_CATEGORIES[details[0][5]],
-            'status': details[0][6],
-            'date_posted': format_date(details[0][7]),
-            'pdf': details[0][8],
-            'street': details[0][9],
-            'city': details[0][10],
-            'zipcode': details[0][11],
-            'owner_name': details[0][12],
-            'owner_last': details[0][13],
-            'owner_image': details[0][14] if details[0][14] is None else generate_profile_pic_url(details[0][14]),
-            'owner_cancellations': details[0][15],
-            'student_name': details[0][16] if details[0][1] is not None else None,
-            'student_last': details[0][17] if details[0][1] is not None else None,
-            'days': details[1],
-            'users_requested': details[2],
-            'owner_rating': details[3],
-        }
-
+        details_dict = self.job_details_dict(details)
         return jsonify(details_dict), STATUS_CODE['ok']
 
     def get_job_list_by_status(self, data):
@@ -154,14 +168,9 @@ class JobController:
                 'job_id': row[0],
                 'title': row[1],
                 'price':  format_price(row[2]),
-                'categories': JOB_CATEGORIES[row[3]],
+                'categories': row[3],
                 'date_posted': format_date(row[4]),
-                'city': row[5],
-                'owner_id': row[6],
-                'owner_first': row[7],
-                'owner_last': row[8],
-                'street': row[9],
-                'zipcode': row[10],
+                'city': row[5]
             }
             results.append(job)
 
@@ -186,3 +195,19 @@ class JobController:
             return jsonify('Could not add rates at this moment.'.format(id=data['job_id'])), STATUS_CODE['server_error']
 
         return jsonify('Rating added successfully!'), STATUS_CODE['created']
+
+    def get_contract(self, data):
+        job_info, error_msg = self.dao.get_contract(data)
+        if error_msg is not None:
+            return jsonify(error_msg), STATUS_CODE['bad_request']
+
+        if job_info is None:
+            return jsonify('Contract not found for job {id}'.format(id=data['job_id'])), STATUS_CODE['not_found']
+
+        if data['owner_id'] != job_info[1] or data['student_id'] != job_info[2]:
+            return jsonify('Access denied'), STATUS_CODE['forbidden']
+
+        pdf_decoded = base64.b64decode(job_info[0])
+        file_name = 'agreement_contract{id}.pdf'.format(id=data['job_id'])
+        return send_file(BytesIO(pdf_decoded), mimetype='application/pdf', cache_timeout=0,
+                         attachment_filename=file_name)
