@@ -23,14 +23,14 @@ JOB_REQUESTS_STATE = {
 }
 
 JOB_CATEGORIES = {
-    1:  'Animals',
-    2:  'Auto',
-    3:  'Education',
-    4:  'Events',
-    5:  'Home',
-    6:  'Other',
-    7:  'Self-care',
-    8:  'Shop',
+    1: 'Animals',
+    2: 'Auto',
+    3: 'Education',
+    4: 'Events',
+    5: 'Home',
+    6: 'Self-care',
+    7: 'Shop',
+    8: 'Other',
 }
 
 WEEK_DAYS = {

@@ -1,5 +1,3 @@
-from psycopg2 import DatabaseError
-
 from decorators import exception_handler
 from models.main_dao import MainDao
 from utilities import JOB_REQUESTS_STATE, WEEK_DAYS, JOB_STATUS
