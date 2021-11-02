@@ -73,21 +73,14 @@ def create_user():
         return jsonify(error_msg), STATUS_CODE['bad_request']
 
 
-@app.route('/api/users', methods=['GET'])
+@app.route('/api/users/<int:account_type>', methods=['GET'])
 @jwt_required()
-def get_users():
-    data = {'deleted': False}
+def get_users(account_type):
+    if account_type not in [STUDENT_ACCOUNT, CLIENT_ACCOUNT, SUPERUSER_ACCOUNT]:
+        return jsonify('Valid type: %s, %s, and %s' % (STUDENT_ACCOUNT, CLIENT_ACCOUNT, SUPERUSER_ACCOUNT)), \
+           STATUS_CODE['bad_request']
 
-    if 'account_type' in request.args:
-        if int(request.args['account_type']) not in [STUDENT_ACCOUNT, CLIENT_ACCOUNT, SUPERUSER_ACCOUNT]:
-            return jsonify('Valid type: %s, %s, and %s' % (STUDENT_ACCOUNT, CLIENT_ACCOUNT, SUPERUSER_ACCOUNT)), \
-                   STATUS_CODE['bad_request']
-
-        data.update({'type': request.args['account_type']})
-
-    if 'deleted' in request.args:
-        data.update({'deleted': True})
-
+    data = {'type': account_type}
     return UserController().get_all_users(data)
 
 
@@ -155,20 +148,21 @@ def cancel_job_request():
 
 @app.route('/api/job_requests/<int:job_id>', methods=['GET'])
 @jwt_required()
-def job_requests_list(job_id):
-    data = {'job_id': job_id}
-    if request.args is not None:
-        for key, value in request.args.items():
-            data.update({
-                key: value
-            })
+def job_requests_list():
+    if request.json is None or 'job_id' not in request.json:
+        return jsonify('The following parameter is required: job_id'), STATUS_CODE['bad_request']
+
+    data = request.json
     return JobController().get_requests_list(data)
 
 
-@app.route('/api/student_requests/<int:student_id>', methods=['GET'])
-# @jwt_required()
-def student_requests_list(student_id):
-    data = {'student_id': student_id}
+@app.route('/api/student_requests', methods=['GET'])
+@jwt_required()
+def student_requests_list():
+    if request.json is None or 'student_id' not in request.json:
+        return jsonify('The following parameter is required: student_id'), STATUS_CODE['bad_request']
+
+    data = request.json
     return JobController().get_student_requests_list(data)
 
 
@@ -290,5 +284,17 @@ def retrieve_chat_messages(job_id):
     return ChatController().get_job_messages(data)
 
 
+@app.route('/api/pdf/<int:job_id>', methods=['GET'])
+def agreement_contract(job_id):
+    if 'student_id' not in request.args and 'owner_id':
+        return jsonify('student_id and owner_id needs to be specified')
+    data = {
+        'job_id': job_id,
+        'student_id': int(request.args['student_id']),
+        'owner_id': int(request.args['owner_id']),
+    }
+    return JobController().get_contract(data)
+
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
