@@ -1,5 +1,6 @@
 from decorators import exception_handler
 from models.main_dao import MainDao
+from utilities import ADMIN_ACCOUNT, STUDENT_ACCOUNT, CLIENT_ACCOUNT
 
 
 class UserDao(MainDao):
@@ -22,11 +23,16 @@ class UserDao(MainDao):
 
     @exception_handler
     def login_user(self, credentials):
+        if credentials['admin']:
+            user_type = (ADMIN_ACCOUNT, )
+        else:
+            user_type = (STUDENT_ACCOUNT, CLIENT_ACCOUNT)
+
         cursor = self.conn.cursor()
         query = 'select user_id, type ' \
                 'from users ' \
-                'where email=%s and password=crypt(%s, password) and deleted=false;'
-        cursor.execute(query, (credentials['email'], credentials['password']))
+                'where type in %s and email=%s and password=crypt(%s, password) and deleted=false;'
+        cursor.execute(query, (user_type, credentials['email'], credentials['password']))
         result = cursor.fetchone()
         if result is None:
             return None, None

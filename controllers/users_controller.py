@@ -42,11 +42,11 @@ class UserController:
         if user is None:
             return jsonify("Invalid credentials"), STATUS_CODE['unauthorized']
 
-        dict = {
+        user_info = {
             'user_id': user[0],
             'type': user[1],
         }
-        return jsonify(dict), STATUS_CODE['ok']
+        return jsonify(user_info), STATUS_CODE['ok']
 
     @staticmethod
     def get_user_info_dict(data):
