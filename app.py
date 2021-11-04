@@ -10,7 +10,7 @@ from config.config import JWT_SECRET_KEY, JWT_TOKEN_LOCATION, JWT_ACCESS_TOKEN_E
 from controllers.chat_controllers import ChatController
 from controllers.jobs_controller import JobController
 from controllers.users_controller import UserController
-from utilities import validate_user_info, validate_login_data, STATUS_CODE, SUPERUSER_ACCOUNT, \
+from utilities import validate_user_info, validate_login_data, STATUS_CODE, ADMIN_ACCOUNT, \
     CLIENT_ACCOUNT, STUDENT_ACCOUNT, validate_password_info, validate_email, upload_image_aws, validate_profile_data, \
     validate_assign_job_data, validate_job_rate, validate_job_status, validate_create_job, validate_message_data, \
     format_price, validate_job_requests
@@ -46,6 +46,7 @@ def authenticate():
     data = request.json
     error_msg = validate_login_data(data)
     if error_msg is None:
+        data.update({'admin': 'admin' in request.args})
         response, status_code = UserController().login_user(data)
         if status_code == STATUS_CODE['ok']:
             access_token = create_access_token(identity=data['email'])
