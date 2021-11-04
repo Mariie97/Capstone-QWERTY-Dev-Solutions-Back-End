@@ -80,8 +80,8 @@ def get_users():
     data = {'deleted': False}
 
     if 'account_type' in request.args:
-        if int(request.args['account_type']) not in [STUDENT_ACCOUNT, CLIENT_ACCOUNT, SUPERUSER_ACCOUNT]:
-            return jsonify('Valid type: %s, %s, and %s' % (STUDENT_ACCOUNT, CLIENT_ACCOUNT, SUPERUSER_ACCOUNT)), \
+        if int(request.args['account_type']) not in [STUDENT_ACCOUNT, CLIENT_ACCOUNT, ADMIN_ACCOUNT]:
+            return jsonify('Valid type: %s, %s, and %s' % (STUDENT_ACCOUNT, CLIENT_ACCOUNT, ADMIN_ACCOUNT)), \
                    STATUS_CODE['bad_request']
 
         data.update({'type': request.args['account_type']})
