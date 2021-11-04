@@ -176,7 +176,7 @@ class JobDao(MainDao):
             params.append(data['owner_id'])
 
         if 'month' in data:
-            filters = 'and date_part(\'month\', date_posted)=%s '
+            filters = filters + 'and date_part(\'month\', date_posted)=%s '
             params.append(data['month'])
 
         if 'year' in data:
