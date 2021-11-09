@@ -45,8 +45,8 @@ class AgreementContract:
         c.drawRightString(width - 0.5 * inch, height - 0.25 * inch, 'Contract Automatically Generated - '
                           + str(date.today()))
 
-        #image = 'NewLogo.png'
-        #c.drawImage(image, 230, 630, width=None, height=None)
+        image = Image('controllers/NewLogo.jpeg')
+        image.drawOn(c, 230, 630)
 
         c.setFont('Helvetica', 12, leading=None)
         c.drawCentredString(width * 0.5, 600, 'Client-Student Contract Agreement for: ')
