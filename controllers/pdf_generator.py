@@ -5,6 +5,7 @@ from reportlab.lib.styles import ParagraphStyle, getSampleStyleSheet
 from reportlab.platypus import Paragraph
 from reportlab.platypus import Image
 from datetime import date
+from utilities import CITIES
 
 
 class AgreementContract:
@@ -32,7 +33,7 @@ class AgreementContract:
         job_street = job_info['street']
         job_city = job_info['city']
         job_zip = job_info['zipcode']
-        job_address = str(job_street) + ', ' + str(job_city) + ', Puerto Rico, ' + str(job_zip)
+        job_address = str(job_street) + ', ' + CITIES[job_city] + ', Puerto Rico, ' + str(job_zip)
         job_price = job_info['price']
 
         styles = getSampleStyleSheet()
