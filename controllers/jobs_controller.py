@@ -4,7 +4,7 @@ from io import BytesIO
 from flask import jsonify, send_file
 
 from models.jobs_dao import JobDao
-from pdf_generator import AgreementContract
+from controllers.pdf_generator import AgreementContract
 from utilities import STATUS_CODE, format_date, generate_profile_pic_url, JOB_CATEGORIES, format_price
 
 
@@ -133,7 +133,7 @@ class JobController:
                 job_id=data['job_id'])),  STATUS_CODE['not_found']
 
         job_info = self.job_details_dict(JobDao().get_job_details(data)[0])
-        pdf = AgreementContract(job_info).get_pdf()
+        pdf = AgreementContract(job_info, data['job_id']).get_pdf()
         contract_data = {
             'job_id': data['job_id'],
             'pdf': pdf,
