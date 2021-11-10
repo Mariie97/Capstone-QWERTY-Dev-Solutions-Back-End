@@ -74,7 +74,7 @@ def create_user():
         return jsonify(error_msg), STATUS_CODE['bad_request']
 
 
-@app.route('/api/users', methods=['GET'])
+@app.route('/api/users/', methods=['GET'])
 @jwt_required()
 def get_users():
     data = {'deleted': False}
