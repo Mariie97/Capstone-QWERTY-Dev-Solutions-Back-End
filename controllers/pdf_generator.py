@@ -27,11 +27,11 @@ class AgreementContract:
     def generate_contract(self, job_info, the_job_id):
         client_first_name = job_info['owner_name']
         client_last_name = job_info['owner_last']
-        client_name = client_first_name + ' ' + client_last_name
+        client_name = str(client_first_name) + ' ' + str(client_last_name)
 
         student_first_name = job_info['student_name']
         student_last_name = job_info['student_last']
-        student_name = student_first_name + ' ' + student_last_name
+        student_name = str(student_first_name) + ' ' + str(student_last_name)
 
         job_id = the_job_id
         job_title = job_info['title']
@@ -39,7 +39,7 @@ class AgreementContract:
         job_street = job_info['street']
         job_city = job_info['city']
         job_zip = job_info['zipcode']
-        job_address = str(job_street) + ', ' + CITIES[job_city] + ', Puerto Rico, ' + str(job_zip)
+        job_address = job_street + ', ' + CITIES[job_city] + ', Puerto Rico, ' + str(job_zip)
         job_price = job_info['price']
 
         styles = getSampleStyleSheet()
