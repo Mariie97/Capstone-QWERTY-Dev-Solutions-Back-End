@@ -9,12 +9,12 @@ from config.config import AWS_BUCKET_NAME, AWS_URL_EXPIRE_SECONDS, AWS_UPLOAD_FO
 
 STUDENT_ACCOUNT = 1
 CLIENT_ACCOUNT = 2
-SUPERUSER_ACCOUNT = 3
+ADMIN_ACCOUNT = 3
 
 account_type = {
     'student': STUDENT_ACCOUNT,
     'client': CLIENT_ACCOUNT,
-    'superuser': SUPERUSER_ACCOUNT,
+    'admin': ADMIN_ACCOUNT,
 }
 
 JOB_REQUESTS_STATE = {
