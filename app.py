@@ -167,7 +167,7 @@ def job_requests_list(job_id):
 
 
 @app.route('/api/student_requests/<int:student_id>', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def student_requests_list(student_id):
     data = {'student_id': student_id}
     return JobController().get_student_requests_list(data)

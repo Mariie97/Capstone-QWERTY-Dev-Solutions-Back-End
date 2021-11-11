@@ -176,6 +176,7 @@ class JobController:
                 'owner_last': row[8],
                 'street': row[9],
                 'zipcode': row[10],
+                'student_id': row[11]
             }
             results.append(job)
 
