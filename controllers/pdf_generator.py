@@ -14,33 +14,30 @@ from utilities import CITIES
 
 class AgreementContract:
 
-    def __init__(self, job_info, job_id):
-        self.job_id = job_id
+    def __init__(self, job_info):
         self.job_info = job_info
         self.buffer = io.BytesIO()
-        self.pdf_file_name = 'Contract_' + str(job_id) + '.pdf'
         self.canvas = Canvas(self.buffer, pagesize=letter)
         self.pdf = None
 
-        self.generate_contract(job_info, job_id)
+        self.generate_contract()
 
-    def generate_contract(self, job_info, the_job_id):
-        client_first_name = job_info['owner_name']
-        client_last_name = job_info['owner_last']
+    def generate_contract(self):
+        client_first_name = self.job_info['owner_name']
+        client_last_name = self.job_info['owner_last']
         client_name = str(client_first_name) + ' ' + str(client_last_name)
 
-        student_first_name = job_info['student_name']
-        student_last_name = job_info['student_last']
+        student_first_name = self.job_info['student_name']
+        student_last_name = self.job_info['student_last']
         student_name = str(student_first_name) + ' ' + str(student_last_name)
 
-        job_id = the_job_id
-        job_title = job_info['title']
-        job_description = job_info['description']
-        job_street = job_info['street']
-        job_city = job_info['city']
-        job_zip = job_info['zipcode']
+        job_title = self.job_info['title']
+        job_description = self.job_info['description']
+        job_street = self.job_info['street']
+        job_city = self.job_info['city']
+        job_zip = self.job_info['zipcode']
         job_address = job_street + ', ' + CITIES[job_city] + ', Puerto Rico, ' + str(job_zip)
-        job_price = job_info['price']
+        job_price = self.job_info['price']
 
         styles = getSampleStyleSheet()
         width, height = letter

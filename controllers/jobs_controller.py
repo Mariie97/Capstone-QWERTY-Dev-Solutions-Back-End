@@ -134,7 +134,7 @@ class JobController:
                 job_id=data['job_id'])),  STATUS_CODE['not_found']
 
         job_info = self.job_details_dict(JobDao().get_job_details(data)[0])
-        pdf = AgreementContract(job_info, data['job_id']).get_pdf()
+        pdf = AgreementContract(job_info).get_pdf()
         contract_data = {
             'job_id': data['job_id'],
             'pdf': pdf,
@@ -209,6 +209,6 @@ class JobController:
             return jsonify('Access denied'), STATUS_CODE['forbidden']
 
         pdf_decoded = base64.b64decode(job_info[0])
-        file_name = 'agreement_contract{id}.pdf'.format(id=data['job_id'])
+        file_name = 'Contract_{id}.pdf'.format(id=data['job_id'])
         return send_file(BytesIO(pdf_decoded), mimetype='application/pdf', cache_timeout=0,
                          attachment_filename=file_name)
