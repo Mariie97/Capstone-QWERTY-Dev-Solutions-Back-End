@@ -279,3 +279,24 @@ class JobDao(MainDao):
         else:
             self.conn.commit()
         return True, None
+
+    @exception_handler
+    def save_contract(self, data):
+        cursor = self.conn.cursor()
+        query = 'update jobs set pdf = %s where job_id=%s;'
+        cursor.execute(query, (data['pdf'], data['job_id']))
+        self.conn.commit()
+        return True, None
+
+    @exception_handler
+    def get_contract(self, data):
+        cursor = self.conn.cursor()
+        query = 'select pdf, owner_id, student_id ' \
+                'from jobs ' \
+                'where job_id=%s;'
+        cursor.execute(query, (data['job_id'], ))
+        pdf = cursor.fetchone()
+        if pdf is None:
+            return None, None
+
+        return pdf, None

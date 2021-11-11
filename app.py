@@ -291,5 +291,17 @@ def retrieve_chat_messages(job_id):
     return ChatController().get_job_messages(data)
 
 
+@app.route('/api/pdf/<int:job_id>', methods=['GET'])
+def agreement_contract(job_id):
+    if 'student_id' not in request.args and 'owner_id':
+        return jsonify('student_id and owner_id needs to be specified')
+    data = {
+        'job_id': job_id,
+        'student_id': int(request.args['student_id']),
+        'owner_id': int(request.args['owner_id']),
+    }
+    return JobController().get_contract(data)
+
+
 if __name__ == '__main__':
     app.run(debug=True)

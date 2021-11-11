@@ -142,7 +142,7 @@ class UserDao(MainDao):
         cursor = self.conn.cursor()
         query = 'select first_name, last_name, email, image, about, cancellations, type, address_id ' \
                 'from users ' \
-                'where user_id=%s and deleted=false;'
+                'where user_id=%s;'
 
         cursor.execute(query, (user['user_id'], ))
         user_info = cursor.fetchone()
