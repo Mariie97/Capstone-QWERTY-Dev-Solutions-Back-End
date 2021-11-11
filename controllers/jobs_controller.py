@@ -98,7 +98,7 @@ class JobController:
                 'user_id': row[0],
                 'first_name': row[1],
                 'last_name': row[2],
-                'image': row[3],
+                'image': generate_profile_pic_url(row[3]),
                 'date': row[4],
             }
             list.append(request)
@@ -118,7 +118,7 @@ class JobController:
                 'job_id': row[0],
                 'title': row[1],
                 'price':  format_price(row[2]),
-                'categories': row[3],
+                'categories': JOB_CATEGORIES[row[3]],
                 'date': row[4],
             }
             list.append(request)
@@ -169,9 +169,14 @@ class JobController:
                 'job_id': row[0],
                 'title': row[1],
                 'price':  format_price(row[2]),
-                'categories': row[3],
+                'categories': JOB_CATEGORIES[row[3]],
                 'date_posted': format_date(row[4]),
-                'city': row[5]
+                'city': row[5],
+                'owner_id': row[6],
+                'owner_first': row[7],
+                'owner_last': row[8],
+                'street': row[9],
+                'zipcode': row[10],
             }
             results.append(job)
 
