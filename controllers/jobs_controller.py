@@ -35,7 +35,6 @@ class JobController:
             'categories': JOB_CATEGORIES[details[0][5]],
             'status': details[0][6],
             'date_posted': format_date(details[0][7]),
-            'pdf': details[0][8],
             'street': details[0][9],
             'city': details[0][10],
             'zipcode': details[0][11],
