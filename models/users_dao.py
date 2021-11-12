@@ -1,6 +1,6 @@
 from decorators import exception_handler
 from models.main_dao import MainDao
-from utilities import ADMIN_ACCOUNT, STUDENT_ACCOUNT, CLIENT_ACCOUNT
+from utilities import ADMIN_ACCOUNT, STUDENT_ACCOUNT, CLIENT_ACCOUNT, JOB_STATUS, JOB_REQUESTS_STATE
 
 
 class UserDao(MainDao):
@@ -166,10 +166,27 @@ class UserDao(MainDao):
     @exception_handler
     def delete_user(self, data):
         cursor = self.conn.cursor()
-        query = 'update users set deleted=true where user_id=%s and deleted=false;'
+        query = 'update users set deleted=true where user_id=%s and deleted=false returning type;'
         cursor.execute(query, (data['user_id'], ))
+
         if cursor.rowcount == 0:
             return False, None
+
+        user_type = cursor.fetchone()[0]
+        if user_type == CLIENT_ACCOUNT:
+            # Delete user jobs
+            query = 'update jobs set status=%s where owner_id=%s'
+            cursor.execute(query, (JOB_STATUS['deleted'], data['user_id']))
+
+            # Close job's requests
+            query = 'update requests set state=%s ' \
+                    'from jobs where jobs.job_id=requests.job_id and jobs.owner_id=%s;'
+            cursor.execute(query, (JOB_REQUESTS_STATE['closed'], data['user_id']))
+
+        elif user_type == STUDENT_ACCOUNT:
+            # Close student's requests
+            query = 'update requests set state=%s where student_id=%s'
+            cursor.execute(query, (JOB_REQUESTS_STATE['closed'], data['user_id']))
 
         self.conn.commit()
         return True, None
