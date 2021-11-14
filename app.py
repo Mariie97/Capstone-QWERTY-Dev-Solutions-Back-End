@@ -13,7 +13,7 @@ from controllers.users_controller import UserController
 from utilities import validate_user_info, validate_login_data, STATUS_CODE, ADMIN_ACCOUNT, \
     CLIENT_ACCOUNT, STUDENT_ACCOUNT, validate_password_info, validate_email, upload_image_aws, validate_profile_data, \
     validate_assign_job_data, validate_job_rate, validate_job_status, validate_create_job, validate_message_data, \
-    format_price, validate_job_requests
+    format_price, validate_job_requests, get_query_params
 
 app = Flask(__name__)
 
@@ -159,18 +159,17 @@ def cancel_job_request():
 def job_requests_list(job_id):
     data = {'job_id': job_id}
     if request.args is not None:
-        for key, value in request.args.items():
-            data.update({
-                key: value
-            })
+        get_query_params(request, data)
     return JobController().get_requests_list(data)
 
 
 @app.route('/api/student_requests/<int:student_id>', methods=['GET'])
 @jwt_required()
-def student_requests_list(student_id):
+def jobs_requested_by_student(student_id):
     data = {'student_id': student_id}
-    return JobController().get_student_requests_list(data)
+    if request.args is not None:
+        get_query_params(request, data)
+    return JobController().get_student_job_requested(data)
 
 
 @app.route('/api/assign_job', methods=['PUT'])
@@ -209,10 +208,7 @@ def job_info(job_id):
 def jobs_list(status):
     data = {'status': status}
     if request.args is not None:
-        for key, value in request.args.items():
-            data.update({
-                key: value
-            })
+        get_query_params(request, data)
     return JobController().get_job_list_by_status(data)
 
 

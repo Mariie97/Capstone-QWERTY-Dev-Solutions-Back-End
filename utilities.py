@@ -313,3 +313,11 @@ def format_price(price, clean=False):
 def validate_job_requests(data):
     expected_params = ['job_id', 'student_id']
     return validate_expected_param(expected_params, data)
+
+
+def get_query_params(request, data):
+    for key, value in request.args.items():
+        data.update({
+            key: value
+        })
+
