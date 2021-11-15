@@ -306,8 +306,7 @@ def format_price(price, clean=False):
     if clean:
         return price.replace(',', '')
 
-    locale.setlocale(locale.LC_ALL, '')
-    return locale.currency(price, grouping=True)
+    return '$ {:,.2f}'.format(price)
 
 
 def validate_job_requests(data):
