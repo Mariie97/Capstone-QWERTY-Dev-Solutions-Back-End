@@ -5,6 +5,48 @@ from utilities import JOB_REQUESTS_STATE, WEEK_DAYS, JOB_STATUS
 
 class JobDao(MainDao):
 
+    @staticmethod
+    def get_job_filters(data, params_list):
+        filters = ''
+        limit = ''
+        if 'owner_id' in data:
+            filters = 'and owner_id=%s '
+            params_list.append(data['owner_id'])
+
+        if 'student_id' in data:
+            filters = filters + 'and student_id=%s '
+            params_list.append(data['student_id'])
+
+        if 'month' in data:
+            filters = filters + 'and date_part(\'month\', date_posted)=%s '
+            params_list.append(data['month'])
+
+        if 'year' in data:
+            filters = filters + 'and date_part(\'year\', date_posted)=%s '
+            params_list.append(data['year'])
+
+        if 'category' in data:
+            filters = filters + 'and categories=%s '
+            params_list.append(data['category'])
+
+        if 'city' in data:
+            filters = filters + 'and city=%s '
+            params_list.append(data['city'])
+
+        if 'minPrice' in data:
+            filters = filters + 'and price>=%s '
+            params_list.append(data['minPrice'])
+
+        if 'maxPrice' in data:
+            filters = filters + 'and price<=%s '
+            params_list.append(data['maxPrice'])
+
+        if 'limit' in data:
+            limit = 'limit %s'
+            params_list.append(data['limit'])
+
+        return filters, limit, params_list
+
     @exception_handler
     def create_job(self, data):
         cursor = self.conn.cursor()
@@ -93,13 +135,16 @@ class JobDao(MainDao):
         return requests_list, None
 
     @exception_handler
-    def get_student_requests_list(self, data):
+    def get_student_job_requested(self, data):
+        params = [data.pop('student_id'), JOB_REQUESTS_STATE['open']]
+        filters, limit, params_list = self.get_job_filters(data, params)
         cursor = self.conn.cursor()
         query = 'select R.job_id, title, price, categories, date ' \
-                'from (requests as R inner join jobs as J using(job_id)) inner join users as U on J.owner_id=U.user_id ' \
-                'where R.student_id=%s and state=%s ' \
-                'order by date asc;'
-        cursor.execute(query, (data['student_id'], JOB_REQUESTS_STATE['open']))
+                'from (requests as R inner join jobs as J using(job_id)) ' \
+                'where R.student_id=%s and state=%s {filters}' \
+                'order by date asc ' \
+                '{limit};'.format(filters=filters, limit=limit)
+        cursor.execute(query, params)
         requests_list = self.convert_to_list(cursor)
         if len(requests_list) == 0:
             return None, None
@@ -167,46 +212,8 @@ class JobDao(MainDao):
 
     @exception_handler
     def get_job_list_by_status(self, data):
-        filters = ''
-        limit = ''
         params = [data['status']]
-
-        if 'owner_id' in data:
-            filters = 'and owner_id=%s '
-            params.append(data['owner_id'])
-
-        if 'student_id' in data:
-            filters = filters + 'and student_id=%s '
-            params.append(data['student_id'])
-
-        if 'month' in data:
-            filters = filters + 'and date_part(\'month\', date_posted)=%s '
-            params.append(data['month'])
-
-        if 'year' in data:
-            filters = filters + 'and date_part(\'year\', date_posted)=%s '
-            params.append(data['year'])
-
-        if 'category' in data:
-            filters = filters + 'and categories=%s '
-            params.append(data['category'])
-
-        if 'city' in data:
-            filters = filters + 'and city=%s '
-            params.append(data['city'])
-
-        if 'minPrice' in data:
-            filters = filters + 'and price>=%s '
-            params.append(data['minPrice'])
-
-        if 'maxPrice' in data:
-            filters = filters + 'and price<=%s '
-            params.append(data['maxPrice'])
-
-        if 'limit' in data:
-            limit = 'limit %s'
-            params.append(data['limit'])
-
+        filters, limit, params = self.get_job_filters(data, params)
         cursor = self.conn.cursor()
         query = 'select job_id, title, price, categories, date_posted, city, owner_id, first_name, last_name, street, ' \
                 'zipcode, student_id ' \

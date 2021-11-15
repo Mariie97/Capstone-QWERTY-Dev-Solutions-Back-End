@@ -64,7 +64,7 @@ class JobController:
         dict = {
             'job_id': request[0],
             'student_id': request[1],
-            'date': request[2],
+            'date': format_date(request[2]),
             'state': request[3],
         }
 
@@ -98,18 +98,18 @@ class JobController:
                 'first_name': row[1],
                 'last_name': row[2],
                 'image': generate_profile_pic_url(row[3]),
-                'date': row[4],
+                'date': format_date(row[4]),
             }
             list.append(request)
         return jsonify(list), STATUS_CODE['ok']
 
-    def get_student_requests_list(self, data):
-        requests, error_msg = self.dao.get_student_requests_list(data)
+    def get_student_job_requested(self, data):
+        requests, error_msg = self.dao.get_student_job_requested(data)
         if error_msg is not None:
             return jsonify(error_msg), STATUS_CODE['bad_request']
 
         if requests is None:
-            return jsonify("Student {id} has no requests.".format(id=data['student_id'])), STATUS_CODE['not_found']
+            return jsonify("No jobs were found for the student."), STATUS_CODE['not_found']
 
         list = []
         for row in requests:
@@ -118,7 +118,7 @@ class JobController:
                 'title': row[1],
                 'price':  format_price(row[2]),
                 'categories': JOB_CATEGORIES[row[3]],
-                'date': row[4],
+                'date': format_date(row[4]),
             }
             list.append(request)
         return jsonify(list), STATUS_CODE['ok']
