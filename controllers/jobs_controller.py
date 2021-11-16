@@ -119,7 +119,7 @@ class JobController:
                 'title': row[1],
                 'price':  format_price(row[2]),
                 'categories': JOB_CATEGORIES[row[3]],
-                'date': format_date(row[4]),
+                'date_posted': format_date(row[4]),
             }
             list.append(request)
         return jsonify(list), STATUS_CODE['ok']
