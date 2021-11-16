@@ -122,8 +122,10 @@ class JobDao(MainDao):
             params.append(data['state'])
 
         cursor = self.conn.cursor()
-        query = 'select user_id, first_name, last_name, image, date ' \
-                'from requests as R inner join users as U on R.student_id=U.user_id ' \
+        query = 'select user_id, first_name, last_name, image, date, owner_id ' \
+                'from requests as R ' \
+                '   inner join users as U on R.student_id=U.user_id' \
+                '   inner join jobs as J using(job_id) ' \
                 'where job_id=%s {filters}' \
                 'order by date asc;'.format(filters=filters)
 

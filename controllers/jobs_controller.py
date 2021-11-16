@@ -101,6 +101,7 @@ class JobController:
                 'date': format_date(row[4]),
             }
             list.append(request)
+        list.append({'owner_id': requests[0][5]})
         return jsonify(list), STATUS_CODE['ok']
 
     def get_student_job_requested(self, data):

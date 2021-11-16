@@ -158,7 +158,7 @@ def cancel_job_request():
 @jwt_required()
 def job_requests_list(job_id):
     data = {'job_id': job_id}
-    if request.args is not None:
+    if len(request.args) > 0:
         get_query_params(request, data)
     return JobController().get_requests_list(data)
 
@@ -167,7 +167,7 @@ def job_requests_list(job_id):
 @jwt_required()
 def jobs_requested_by_student(student_id):
     data = {'student_id': student_id}
-    if request.args is not None:
+    if len(request.args) > 0:
         get_query_params(request, data)
     return JobController().get_student_job_requested(data)
 
@@ -207,7 +207,7 @@ def job_info(job_id):
 @jwt_required()
 def jobs_list(status):
     data = {'status': status}
-    if request.args is not None:
+    if len(request.args) > 0:
         get_query_params(request, data)
     return JobController().get_job_list_by_status(data)
 
