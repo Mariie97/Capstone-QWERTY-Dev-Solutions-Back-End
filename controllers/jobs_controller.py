@@ -91,7 +91,7 @@ class JobController:
         if requests is None:
             return jsonify('No requests were found'), STATUS_CODE['not_found']
 
-        list = []
+        request_list = []
         for row in requests:
             request = {
                 'user_id': row[0],
@@ -100,9 +100,13 @@ class JobController:
                 'image': generate_profile_pic_url(row[3]),
                 'date': format_date(row[4]),
             }
-            list.append(request)
-        list.append({'owner_id': requests[0][5]})
-        return jsonify(list), STATUS_CODE['ok']
+            request_list.append(request)
+
+        return_dict = {
+            'requests': request_list,
+            'owner_id': requests[0][5]
+        }
+        return jsonify(return_dict), STATUS_CODE['ok']
 
     def get_student_job_requested(self, data):
         requests, error_msg = self.dao.get_student_job_requested(data)
