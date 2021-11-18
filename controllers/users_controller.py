@@ -1,5 +1,4 @@
 from flask import jsonify
-from psycopg2 import IntegrityError
 
 from models.users_dao import UserDao
 from utilities import STATUS_CODE, generate_profile_pic_url
@@ -10,7 +9,8 @@ class UserController:
     def __init__(self):
         self.dao = UserDao()
 
-    def build_attr_dict(self, data):
+    @staticmethod
+    def build_attr_dict(data):
         return {
             'user_id': data[0],
             'first_name': data[1],
@@ -19,7 +19,8 @@ class UserController:
             'type': data[4],
         }
 
-    def security_questions_dict(self, data):
+    @staticmethod
+    def security_questions_dict(data):
         return {
             'question_1': data[0],
             'question_2': data[1],
@@ -27,7 +28,18 @@ class UserController:
             'answer_2': data[3]
         }
 
+    @staticmethod
+    def clean_data(data):
+        for param, value in data.items():
+            if value == '':
+                data[param] = None
+
     def create_user(self, user_info):
+        user_exist, error_msg = UserDao().verify_user_exist(user_info)
+        if user_exist:
+            return jsonify('User already registered (email={email})'.format(email=user_info['email'])), \
+                   STATUS_CODE['conflict']
+
         user, error_msg = self.dao.create_user(user_info)
         if error_msg is not None:
             return jsonify(error_msg), STATUS_CODE['bad_request']
@@ -83,11 +95,6 @@ class UserController:
             }
             result_list.append(obj)
         return jsonify(result_list), STATUS_CODE['ok']
-
-    def clean_data(self, data):
-        for param, value in data.items():
-            if value == '':
-                data[param] = None
 
     def retrieve_questions(self, user_email):
         user, error_msg = self.dao.retrieve_questions(user_email)

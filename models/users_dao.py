@@ -190,3 +190,13 @@ class UserDao(MainDao):
 
         self.conn.commit()
         return True, None
+
+    @exception_handler
+    def verify_user_exist(self, data):
+        cursor = self.conn.cursor()
+        query = 'select user_id ' \
+                'from users ' \
+                'where email=%s;'
+        cursor.execute(query, (data['email'], ))
+        return cursor.rowcount != 0, None
+

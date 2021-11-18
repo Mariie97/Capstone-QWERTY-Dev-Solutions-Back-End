@@ -139,6 +139,7 @@ STATUS_CODE = {
     'unauthorized': 401,
     'forbidden': 403,
     'not_found': 404,
+    'conflict': 409,
     'server_error': 500,
 }
 
