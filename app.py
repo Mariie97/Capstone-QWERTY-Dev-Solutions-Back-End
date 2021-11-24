@@ -289,8 +289,9 @@ def retrieve_chat_messages(job_id):
 
 @app.route('/api/pdf/<int:job_id>', methods=['GET'])
 def agreement_contract(job_id):
-    if 'student_id' not in request.args and 'owner_id':
+    if 'student_id' not in request.args or 'owner_id' not in request.args:
         return jsonify('student_id and owner_id needs to be specified')
+
     data = {
         'job_id': job_id,
         'student_id': int(request.args['student_id']),
