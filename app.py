@@ -1,5 +1,4 @@
 from datetime import timedelta, datetime, timezone
-
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required, JWTManager, set_access_cookies, \
@@ -41,7 +40,7 @@ def refresh_expiring_tokens(response):
         return response
 
 
-@app.route("/api/login", methods=["POST"])
+@app.route("/login", methods=["POST"])
 def authenticate():
     data = request.json
     error_msg = validate_login_data(data)
@@ -56,7 +55,7 @@ def authenticate():
         return jsonify(error_msg), STATUS_CODE['bad_request']
 
 
-@app.route('/api/logout', methods=['POST'])
+@app.route('/logout', methods=['POST'])
 @jwt_required()
 def logout():
     response = jsonify('Logout successful!')
@@ -64,7 +63,7 @@ def logout():
     return response
 
 
-@app.route('/api/create_user', methods=['POST'])
+@app.route('/create_user', methods=['POST'])
 def create_user():
     data = request.json
     error_msg = validate_user_info(data)
@@ -74,7 +73,7 @@ def create_user():
         return jsonify(error_msg), STATUS_CODE['bad_request']
 
 
-@app.route('/api/users/', methods=['GET'])
+@app.route('/users', methods=['GET'])
 @jwt_required()
 def get_users():
     data = {'deleted': False}
@@ -92,7 +91,7 @@ def get_users():
     return UserController().get_all_users(data)
 
 
-@app.route('/api/edit_user/<int:user_id>', methods=['PUT'])
+@app.route('/edit_user/<int:user_id>', methods=['PUT'])
 @jwt_required()
 def user_edit(user_id):
     data = request.form.copy()
@@ -111,7 +110,7 @@ def user_edit(user_id):
     return UserController().edit_user(data)
 
 
-@app.route('/api/change_password', methods=['GET', 'PUT'])
+@app.route('/change_password', methods=['GET', 'PUT'])
 def change_password():
     if request.method == 'GET':
         if 'email' not in request.args:
@@ -132,7 +131,7 @@ def change_password():
             return jsonify(error_msg), STATUS_CODE['bad_request']
 
 
-@app.route('/api/request_job', methods=['POST'])
+@app.route('/request_job', methods=['POST'])
 @jwt_required()
 def add_job_request():
     error_msg = validate_job_requests(request.json)
@@ -143,7 +142,7 @@ def add_job_request():
     return JobController().add_job_request(data)
 
 
-@app.route('/api/cancel_request', methods=['PUT'])
+@app.route('/cancel_request', methods=['PUT'])
 @jwt_required()
 def cancel_job_request():
     error_msg = validate_job_requests(request.json)
@@ -154,7 +153,7 @@ def cancel_job_request():
     return JobController().cancel_job_request(data)
 
 
-@app.route('/api/job_requests/<int:job_id>', methods=['GET'])
+@app.route('/job_requests/<int:job_id>', methods=['GET'])
 @jwt_required()
 def job_requests_list(job_id):
     data = {'job_id': job_id}
@@ -163,7 +162,7 @@ def job_requests_list(job_id):
     return JobController().get_requests_list(data)
 
 
-@app.route('/api/student_requests/<int:student_id>', methods=['GET'])
+@app.route('/student_requests/<int:student_id>', methods=['GET'])
 @jwt_required()
 def jobs_requested_by_student(student_id):
     data = {'student_id': student_id}
@@ -172,7 +171,7 @@ def jobs_requested_by_student(student_id):
     return JobController().get_student_job_requested(data)
 
 
-@app.route('/api/assign_job', methods=['PUT'])
+@app.route('/assign_job', methods=['PUT'])
 @jwt_required()
 def assign_job_worker():
     error_msg = validate_assign_job_data(request.json)
@@ -183,27 +182,27 @@ def assign_job_worker():
     return JobController().set_job_worker(data)
 
 
-@app.route('/api/is_valid_token', methods=['GET'])
+@app.route('/is_valid_token', methods=['GET'])
 @jwt_required()
 def verify_is_auth():
     return jsonify('User is authenticated!'), STATUS_CODE['ok']
 
 
-@app.route('/api/user_info/<int:user_id>', methods=['GET'])
+@app.route('/user_info/<int:user_id>', methods=['GET'])
 @jwt_required()
 def user_info(user_id):
     data = {'user_id': user_id}
     return UserController().get_user_info(data)
 
 
-@app.route('/api/job_details/<int:job_id>', methods=['GET'])
+@app.route('/job_details/<int:job_id>', methods=['GET'])
 @jwt_required()
 def job_info(job_id):
     data = {'job_id': job_id}
     return JobController().get_job_details(data)
 
 
-@app.route('/api/jobs_list/<int:status>', methods=['GET'])
+@app.route('/jobs_list/<int:status>', methods=['GET'])
 @jwt_required()
 def jobs_list(status):
     data = {'status': status}
@@ -212,7 +211,7 @@ def jobs_list(status):
     return JobController().get_job_list_by_status(data)
 
 
-@app.route('/api/create_job', methods=['POST'])
+@app.route('/create_job', methods=['POST'])
 @jwt_required()
 def create_job():
     error_msg = validate_create_job(request.json)
@@ -227,14 +226,14 @@ def create_job():
     return JobController().create_job(data)
 
 
-@app.route('/api/delete_user/<int:user_id>', methods=['POST'])
+@app.route('/delete_user/<int:user_id>', methods=['POST'])
 @jwt_required()
 def delete_user(user_id):
     data = {'user_id': user_id}
     return UserController().delete_user(data)
 
 
-@app.route('/api/job_status/<int:job_id>', methods=['PUT'])
+@app.route('/job_status/<int:job_id>', methods=['PUT'])
 @jwt_required()
 def change_job_status(job_id):
     error_msg = validate_job_status(request.json)
@@ -248,7 +247,7 @@ def change_job_status(job_id):
     return JobController().set_job_status(data)
 
 
-@app.route('/api/rate_job/<int:job_id>', methods=['POST'])
+@app.route('/rate_job/<int:job_id>', methods=['POST'])
 @jwt_required()
 def rate_job(job_id):
     error_msg = validate_job_rate(request.json)
@@ -263,7 +262,7 @@ def rate_job(job_id):
     return JobController().add_job_ratings(data)
 
 
-@app.route('/api/add_message', methods=['POST'])
+@app.route('/add_message', methods=['POST'])
 @jwt_required()
 def add_message():
     error_msg = validate_message_data(request.json)
@@ -274,7 +273,7 @@ def add_message():
     return ChatController().create_message(data)
 
 
-@app.route('/api/retrieve_messages/<int:job_id>', methods=['GET'])
+@app.route('/retrieve_messages/<int:job_id>', methods=['GET'])
 @jwt_required()
 def retrieve_chat_messages(job_id):
     if 'user_id' not in request.args:
@@ -287,15 +286,17 @@ def retrieve_chat_messages(job_id):
     return ChatController().get_job_messages(data)
 
 
-@app.route('/api/pdf/<int:job_id>', methods=['GET'])
+@app.route('/pdf/<int:job_id>', methods=['GET'])
 def agreement_contract(job_id):
-    if 'student_id' not in request.args and 'owner_id':
-        return jsonify('student_id and owner_id needs to be specified')
+    if 'student_id' not in request.args or 'owner_id' not in request.args:
+        return jsonify('student_id and owner_id needs to be specified'), STATUS_CODE['bad_request']
+   
     data = {
         'job_id': job_id,
         'student_id': int(request.args['student_id']),
         'owner_id': int(request.args['owner_id']),
     }
+    
     return JobController().get_contract(data)
 
 

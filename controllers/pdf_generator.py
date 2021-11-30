@@ -46,7 +46,7 @@ class AgreementContract:
         self.canvas.drawRightString(width - 0.5 * inch, height - 0.25 * inch, 'Contract Automatically Generated - '
                                     + str(date.today()))
 
-        image = Image('controllers/NewLogo.jpeg')
+        image = Image('/var/www/PaRapido_backend/Capstone-QWERTY-Dev-Solutions-Back-End/controllers/NewLogo.jpeg')
         image.drawOn(self.canvas, 230, 630)
 
         self.canvas.setFont('Helvetica', 12, leading=None)
