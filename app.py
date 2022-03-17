@@ -57,7 +57,7 @@ def authenticate():
 
 
 @app.route('/api/logout', methods=['POST'])
-# @jwt_required()
+@jwt_required()
 def logout():
     response = jsonify('Logout successful!')
     unset_jwt_cookies(response)
@@ -75,7 +75,7 @@ def create_user():
 
 
 @app.route('/api/users/', methods=['GET'])
-# # @jwt_required()
+@jwt_required()
 def get_users():
     data = {'deleted': False}
 
@@ -93,7 +93,7 @@ def get_users():
 
 
 @app.route('/api/edit_user/<int:user_id>', methods=['PUT'])
-# @jwt_required()
+@jwt_required()
 def user_edit(user_id):
     data = request.form.copy()
     error_msg = validate_profile_data(data)
@@ -133,7 +133,7 @@ def change_password():
 
 
 @app.route('/api/request_job', methods=['POST'])
-# @jwt_required()
+@jwt_required()
 def add_job_request():
     error_msg = validate_job_requests(request.json)
     if error_msg is not None:
@@ -144,7 +144,7 @@ def add_job_request():
 
 
 @app.route('/api/cancel_request', methods=['PUT'])
-# @jwt_required()
+@jwt_required()
 def cancel_job_request():
     error_msg = validate_job_requests(request.json)
     if error_msg is not None:
@@ -155,7 +155,7 @@ def cancel_job_request():
 
 
 @app.route('/api/job_requests/<int:job_id>', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def job_requests_list(job_id):
     data = {'job_id': job_id}
     if len(request.args) > 0:
@@ -164,7 +164,7 @@ def job_requests_list(job_id):
 
 
 @app.route('/api/student_requests/<int:student_id>', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def jobs_requested_by_student(student_id):
     data = {'student_id': student_id}
     if len(request.args) > 0:
@@ -173,7 +173,7 @@ def jobs_requested_by_student(student_id):
 
 
 @app.route('/api/assign_job', methods=['PUT'])
-# @jwt_required()
+@jwt_required()
 def assign_job_worker():
     error_msg = validate_assign_job_data(request.json)
     if error_msg is not None:
@@ -184,27 +184,27 @@ def assign_job_worker():
 
 
 @app.route('/api/is_valid_token', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def verify_is_auth():
     return jsonify('User is authenticated!'), STATUS_CODE['ok']
 
 
 @app.route('/api/user_info/<int:user_id>', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def user_info(user_id):
     data = {'user_id': user_id}
     return UserController().get_user_info(data)
 
 
 @app.route('/api/job_details/<int:job_id>', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def job_info(job_id):
     data = {'job_id': job_id}
     return JobController().get_job_details(data)
 
 
 @app.route('/api/jobs_list/<int:status>', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def jobs_list(status):
     data = {'status': status}
     if len(request.args) > 0:
@@ -213,7 +213,7 @@ def jobs_list(status):
 
 
 @app.route('/api/create_job', methods=['POST'])
-# @jwt_required()
+@jwt_required()
 def create_job():
     error_msg = validate_create_job(request.json)
     if error_msg is not None:
@@ -228,14 +228,14 @@ def create_job():
 
 
 @app.route('/api/delete_user/<int:user_id>', methods=['POST'])
-# @jwt_required()
+@jwt_required()
 def delete_user(user_id):
     data = {'user_id': user_id}
     return UserController().delete_user(data)
 
 
 @app.route('/api/job_status/<int:job_id>', methods=['PUT'])
-# @jwt_required()
+@jwt_required()
 def change_job_status(job_id):
     error_msg = validate_job_status(request.json)
     if error_msg is not None:
@@ -249,7 +249,7 @@ def change_job_status(job_id):
 
 
 @app.route('/api/rate_job/<int:job_id>', methods=['POST'])
-# @jwt_required()
+@jwt_required()
 def rate_job(job_id):
     error_msg = validate_job_rate(request.json)
     if error_msg is not None:
@@ -264,7 +264,7 @@ def rate_job(job_id):
 
 
 @app.route('/api/add_message', methods=['POST'])
-# @jwt_required()
+@jwt_required()
 def add_message():
     error_msg = validate_message_data(request.json)
     if error_msg is not None:
@@ -275,7 +275,7 @@ def add_message():
 
 
 @app.route('/api/retrieve_messages/<int:job_id>', methods=['GET'])
-# @jwt_required()
+@jwt_required()
 def retrieve_chat_messages(job_id):
     if 'user_id' not in request.args:
         return jsonify("Need to specify the user_id"), STATUS_CODE['bad_request']
