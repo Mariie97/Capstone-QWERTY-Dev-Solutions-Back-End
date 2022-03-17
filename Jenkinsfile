@@ -1,5 +1,5 @@
 pipeline {
-	agent { docker { image 'python:3.8' } }
+	agent { dockerfile { filename 'Dockerfile.build' } }
 	stages {
 		stage('BUILD') {
 			steps{
