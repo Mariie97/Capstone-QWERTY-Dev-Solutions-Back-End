@@ -3,14 +3,12 @@ pipeline {
 	stages {
 		stage('BUILD') {
 			steps{
-				echo 'Building'
+				echo 'Building...'
 			}
 		}
 		stage('TEST') {
 			steps{
 				sh """ 
-					source /home/cory/Desktop/py-envs/parapido-venv/bin/activate
-					pip install -r requirements.txt
 					python test.py
 				"""
 			}
