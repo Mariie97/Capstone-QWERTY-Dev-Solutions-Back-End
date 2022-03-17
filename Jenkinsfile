@@ -1,14 +1,16 @@
 pipeline {
-	agent any
+	agent { docker { image 'python:3.8' } }
 	stages {
 		stage('BUILD') {
 			steps{
-				sh 'pip install -r requirements.txt'
+				echo 'Building...'
 			}
 		}
 		stage('TEST') {
 			steps{
-				sh 'python test.py'
+				sh """ 
+					python test.py
+				"""
 			}
 		}
 	}
