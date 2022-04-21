@@ -1,0 +1,19 @@
+version: "3"
+services:
+  api:
+    build: ./Capstone-QWERTY-Dev-Solutions-Back-End
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./Capstone-QWERTY-Dev-Solutions-Back-End:/api
+  
+  frontend:
+    build: ./Capstone-QWERTY-Dev-Solutions-Team/parapido-gui
+    ports:
+      - "3001:3000"
+    volumes:
+      - ./Capstone-QWERTY-Dev-Solutions-Team/parapido-gui:/parapido
+    depends_on:
+      - api
+    environment:
+      CHOKIDAR_USEPOLLING: "true"
