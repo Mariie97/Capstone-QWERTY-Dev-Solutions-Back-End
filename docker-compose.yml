@@ -1,4 +1,8 @@
 version: "3"
+
+volumes:
+  node_modules:
+  
 services:
   api:
     build: ./Capstone-QWERTY-Dev-Solutions-Back-End
@@ -13,6 +17,7 @@ services:
       - "3001:3000"
     volumes:
       - ./Capstone-QWERTY-Dev-Solutions-Team/parapido-gui:/parapido
+      - node_modules:/parapido/node_modules
     depends_on:
       - api
     environment:
