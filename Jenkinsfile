@@ -13,8 +13,8 @@ pipeline {
 				"""
 			}
 		}
-		post {
-		    always {junit 'test-reports/*.xml'}
-		}
 	}
+        post {
+              always {junit 'test-reports/*.xml'}
+  	}
 }
