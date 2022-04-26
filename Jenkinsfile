@@ -6,19 +6,21 @@ pipeline {
 				echo 'Building...'
 			}
 		}
-		parallel{
-			stage('TEST 1') {
-				steps{
-					sh """ 
-						python test.py
-					"""
+		stage('TESTS') {
+			parallel{
+				stage('TEST 1') {
+					steps{
+						sh """ 
+							python test.py
+						"""
+					}
 				}
-			}
-			stage('TEST 2') {
-				steps{
-					sh """ 
-						python test.py
-					"""
+				stage('TEST 2') {
+					steps{
+						sh """ 
+							python test.py
+						"""
+					}
 				}
 			}
 		}
@@ -28,7 +30,7 @@ pipeline {
 				}
 		}
 	}
-	
+
 	post {
 		always {junit 'test-reports/*.xml'}
 	}
