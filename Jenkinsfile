@@ -6,17 +6,30 @@ pipeline {
 				echo 'Building...'
 			}
 		}
-		stage('TEST') {
-			steps{
-				sh """ 
-					python test.py
-				"""
+		parallel{
+			stage('TEST 1') {
+				steps{
+					sh """ 
+						python test.py
+					"""
+				}
+			}
+			stage('TEST 2') {
+				steps{
+					sh """ 
+						python test.py
+					"""
+				}
 			}
 		}
-                stage('ENVIRONMENT DISPLAY') {
-                        steps{
-                            echo "The env var: ${env.TEST_VAR}"
-                        }
-                }   
+		stage('ENVIRONMENT DISPLAY') {
+			steps{
+				echo "The env var: ${env.TEST_VAR}"
+				}
+		}
+	}
+	
+	post {
+		always {junit 'test-reports/*.xml'}
 	}
 }
