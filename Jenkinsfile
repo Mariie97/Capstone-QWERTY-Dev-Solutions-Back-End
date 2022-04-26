@@ -15,7 +15,7 @@ pipeline {
 		}
                 stage('ENVIRONMENT DISPLAY') {
                         steps{
-                            echo 'The env var: ${env.TEST_VAR}'
+                            echo "The env var: ${env.TEST_VAR}"
                         }
                 }   
 	}
